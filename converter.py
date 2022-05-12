@@ -25,7 +25,7 @@ class WordToVecteur:
 class BERTModel(WordToVecteur):
 
     def __init__(self, listTag : List[str], big: bool = False):
-        super().__init__(self, listTag)
+        super().__init__(listTag)
         self.modelSize = "bert-large-uncased" if big else "bert-base-uncased"
         self.embeddings = []
 
