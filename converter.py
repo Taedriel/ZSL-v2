@@ -28,6 +28,7 @@ class BERTModel(WordToVecteur):
         super(BERTModel, self).__init__(listTag)
         self.modelSize = "bert-large-uncased" if big else "bert-base-uncased"
         self.embeddings = []
+        self.cosineSimMatrix = None
 
         self.tokenizer = BertTokenizer.from_pretrained(self.modelSize, padding=True, truncation=True,)
         self.model = BertModel.from_pretrained(self.modelSize, output_hidden_states = True)
@@ -38,13 +39,13 @@ class BERTModel(WordToVecteur):
 
 
     def export(self, filename):
+        if len(self.embeddings) == 0:
+            raise Exception("Tags not converted yet !")
+        
         try:
             f = open(filename, "w")
         except OSError:
-            return OSError("Could not open file")
-
-        if len(self.embeddings) == 0:
-            return Exception("Tags not converted yet !")
+            raise OSError("Could not open file")
 
         with f:
             for embedding in self.embeddings:
@@ -52,7 +53,19 @@ class BERTModel(WordToVecteur):
                 print(embedding[0], ",", line, sep="", file=f)
 
     def importTagList(self, filename):
-        return NotImplementedError
+        try:
+            f = open(filename, "r")
+        except OSError:
+            return OSError("Could not open file")
+
+        with f:
+            data = f.read().split("\n")
+            for item in data:
+                if item not in self.listTags and str.strip(item) != "":
+                    self.listTags.append(item)
+            print(self.listTags)
+            logging.info(f"Import finished : {len(self.listTags)} elements imported.")
+            
 
     def convert(self):
         for i, tag in enumerate(self.listTags):
@@ -81,7 +94,15 @@ class BERTModel(WordToVecteur):
                 self.embeddings.append((token, embed))
 
     def computeCoSim(self):
-        # compute cosine similarity between vectors
+        """ compute cosine similarity between all vectors """
+        if len(self.embeddings) == 0:
+            raise Exception("Tags not converted yet !")
+
+        logging.info("Computing cosine similarity, this could take some time...")
+
+        nTokens = len(self.embeddings)
+        self.cosineSimMatrix = [[0 for j in range(nTokens)] for i in range(nTokens)]
+
         for j, vector in enumerate(self.embeddings):
 
             for i, otherVector in enumerate(self.embeddings):
@@ -92,9 +113,17 @@ class BERTModel(WordToVecteur):
                 cos = torch.nn.CosineSimilarity(dim=0)
                 similarity = cos(vector[1], otherVector[1])
 
-                print(vector[0], "^", otherVector[0], "=", round(float(similarity), 2))
+                self.cosineSimMatrix[i][j] = similarity
+                self.cosineSimMatrix[j][i] = similarity
 
-            print()
+    def simBetween(self, token1, token2):
+        if self.cosineSimMatrix is None:
+            self.computeCoSim()
+
+        index1 = [i for i, v in enumerate(self.embeddings) if v[0] == token1]
+        index2 = [i for i, v in enumerate(self.embeddings) if v[0] == token2]
+
+        return self.cosineSimMatrix[index1][index2]
 
 class Sum4LastLayers:
 
@@ -106,5 +135,6 @@ if __name__ == "__main__":
 
     model = BERTModel(["cat", "dog", "snake", "mouse"])
 
-    model.convert()
+    model.importTagList("tagList.csv")
+    # model.convert()
     model.export("test.csv")
