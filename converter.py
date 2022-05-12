@@ -120,8 +120,8 @@ class BERTModel(WordToVecteur):
         if self.cosineSimMatrix is None:
             self.computeCoSim()
 
-        index1 = [i for i, v in enumerate(self.embeddings) if v[0] == token1]
-        index2 = [i for i, v in enumerate(self.embeddings) if v[0] == token2]
+        index1 = [i for i, v in enumerate(self.embeddings) if v[0] == token1][0]
+        index2 = [i for i, v in enumerate(self.embeddings) if v[0] == token2][0]
 
         return self.cosineSimMatrix[index1][index2]
 
