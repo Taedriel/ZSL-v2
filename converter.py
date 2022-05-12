@@ -132,12 +132,10 @@ class BERTModel(WordToVecteur):
         
         return res[0]
 
-    def getNearestEmbeddingOf(self, token, nb = 10):
+    def getNearestEmbeddingOf(self, embedding, nb = 10):
 
         if nb > len(self.embeddings):
             raise Exception("nb too high, not enough token")
-
-        embedding = self.getEmbeddingOf(token)
 
         nearest = []
         for e in self.embeddings:
