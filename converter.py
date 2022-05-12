@@ -9,7 +9,7 @@ from typing import List
 
 class WordToVecteur:
 
-    def __init__(self, listTags : List[str]):
+    def __init__(self, listTags : List[str] = []):
         self.listTags = listTags
 
     def export(self, filename):
@@ -24,7 +24,7 @@ class WordToVecteur:
 
 class BERTModel(WordToVecteur):
 
-    def __init__(self, listTag : List[str], big: bool = False):
+    def __init__(self, listTag : List[str] = [], big: bool = False):
         super(BERTModel, self).__init__(listTag)
         self.modelSize = "bert-large-uncased" if big else "bert-base-uncased"
         self.embeddings = []
