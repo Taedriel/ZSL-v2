@@ -125,6 +125,31 @@ class BERTModel(WordToVecteur):
 
         return self.cosineSimMatrix[index1][index2]
 
+    def getEmbeddingOf(self, token):
+        res = [v for v in self.embeddings if v[0] == token]
+        if len(res) == 0:
+            raise Exception("no such token")
+        
+        return res[0]
+
+    def getNearestEmbeddingOf(self, token, nb = 10):
+
+        if nb > len(self.embeddings):
+            raise Exception("nb too high, not enough token")
+
+        embedding = self.getEmbeddingOf(token)
+
+        nearest = []
+        for e in self.embeddings:
+
+            cos = torch.nn.CosineSimilarity(dim=0)
+            similarity = cos(embedding, e[1])
+
+            nearest.append((e[0], similarity))
+        
+        nearest.sort(key = lambda tup : tup[1])
+        return nearest[:nb]
+
 class Sum4LastLayers:
 
     def merge(self, vector):
