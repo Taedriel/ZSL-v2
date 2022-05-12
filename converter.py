@@ -146,7 +146,7 @@ class BERTModel(WordToVecteur):
             nearest.append((e[0], similarity))
         
         nearest.sort(key = lambda tup : tup[1])
-        return nearest[:nb]
+        return nearest[-nb:]
 
 class Sum4LastLayers:
 
