@@ -72,9 +72,19 @@ class BERTModel(WordToVecteur):
 
     def convert(self):
         """ convert all word in their embeddings"""
-        logging.info()
-        for i, tag in enumerate(self.list_tags):
 
+        logging.info("Starting converting tokens...")
+        nb_token = len(self.list_tags)
+        current_percent = 0
+
+        for i, tag in enumerate(self.list_tags):
+            
+            percent_completion = (i / nb_token) * 100
+            if percent_completion >= current_percent + 10:
+                nearest_percent = (percent_completion // 10) * 10
+                logging.info(f"{nearest_percent}% completed")
+                current_percent = nearest_percent
+            
             inputs = self.tokenizer(tag, return_tensors = "pt")
 
             with torch.no_grad():
