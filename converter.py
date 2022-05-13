@@ -82,7 +82,7 @@ class BERTModel(WordToVecteur):
             percent_completion = (i / nb_token) * 100
             if percent_completion >= current_percent + 10:
                 nearest_percent = (percent_completion // 10) * 10
-                logging.info(str(nearest_percent) + "% completed")
+                logging.info(f"{nearest_percent}% completed")
                 current_percent = nearest_percent
             
             inputs = self.tokenizer(tag, return_tensors = "pt")
@@ -94,7 +94,7 @@ class BERTModel(WordToVecteur):
 
             # log.info(f"[{i}]","Number of layers:", len(hidden_states), "  (initial embeddings + 12 BERT layers)")
             # log.info(f"[{i}]","Number of batches:", len(hidden_states[0]))
-            logging.info(f"[{i}]","Number of tokens:", len(hidden_states[0][0]) - 2)
+            logging.info(f"[{i}] Number of tokens: {len(hidden_states[0][0]) - 2}")
             # log.info(f"[{i}]","Number of hidden units:", len(hidden_states[0][0][0]))
 
             # [# layers, # batches, # tokens, # features] ==> [# tokens, # layers, # features]
