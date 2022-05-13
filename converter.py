@@ -94,7 +94,7 @@ class BERTModel(WordToVecteur):
 
             # log.info(f"[{i}]","Number of layers:", len(hidden_states), "  (initial embeddings + 12 BERT layers)")
             # log.info(f"[{i}]","Number of batches:", len(hidden_states[0]))
-            logging.info(f"[{i}] Number of tokens: {len(hidden_states[0][0]) - 2}")
+            # logging.info(f"[{i}] Number of tokens: {len(hidden_states[0][0]) - 2}")
             # log.info(f"[{i}]","Number of hidden units:", len(hidden_states[0][0][0]))
 
             # [# layers, # batches, # tokens, # features] ==> [# tokens, # layers, # features]
