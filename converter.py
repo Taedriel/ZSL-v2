@@ -82,7 +82,7 @@ class BERTModel(WordToVecteur):
             percent_completion = (i / nb_token) * 100
             if percent_completion >= current_percent + 10:
                 nearest_percent = (percent_completion // 10) * 10
-                logging.info(f"{nearest_percent}% completed")
+                logging.info(str(nearest_percent) + "% completed")
                 current_percent = nearest_percent
             
             inputs = self.tokenizer(tag, return_tensors = "pt")
