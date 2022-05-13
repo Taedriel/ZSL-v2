@@ -145,7 +145,7 @@ class BERTModel(WordToVecteur):
             print("/", ",".join([tag[0] for tag in self.embeddings]), sep = ",", file = f)
 
             for j, tag_y in enumerate(self.embeddings):
-                print(tag_y, ",".join([str(round(self.cosine_sim_matrix[j][i], 3)) for i in range(len(self.embeddings))]), sep = ",", file = f)
+                print(tag_y, ",".join( [str(round(float(self.cosine_sim_matrix[j][i]), 3)) for i in range(len(self.embeddings))]), sep = ",", file = f)
 
     def sim_between(self, token1, token2):
         if self.cosine_sim_matrix is None:
