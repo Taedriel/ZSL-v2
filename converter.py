@@ -30,7 +30,7 @@ class BERTModel(WordToVecteur):
         self.embeddings = []
         self.cosine_sim_matrix = None
 
-        # self.tokenizer = BertTokenizer.from_pretrained(self.model_size, padding=True, truncation=True,)
+        self.tokenizer = BertTokenizer.from_pretrained(self.model_size, padding=True, truncation=True,)
         self.model = BertModel.from_pretrained(self.model_size, output_hidden_states = True)
 
         self.merging_strategy = Sum4LastLayers()
@@ -85,25 +85,10 @@ class BERTModel(WordToVecteur):
                 logging.info(f"{nearest_percent}% completed")
                 current_percent = nearest_percent
             
-
-            encoded = tz.encode_plus(
-                text=tag,  # the sentence to be encoded
-                add_special_tokens=True,  # Add [CLS] and [SEP]
-                max_length = 255,  # maximum length of a sentence
-                pad_to_max_length=True,  # Add [PAD]s
-                return_attention_mask = True,  # Generate the attention mask
-                return_tensors = 'pt',  # ask the function to return PyTorch tensors
-            )
-
-            # Get the input IDs and attention mask in tensor format
-            input_ids = encoded['input_ids']
-            attn_mask = encoded['attention_mask']
-
-
             inputs = self.tokenizer(tag, return_tensors = "pt")
 
             with torch.no_grad():
-                outputs = self.model(input_ids, attn_mask)
+                outputs = self.model(**inputs)
 
             hidden_states = outputs[2]
 
@@ -119,9 +104,20 @@ class BERTModel(WordToVecteur):
 
             # apply different strategy to summarize word embeddings
             tokenized_text = self.tokenizer.tokenize(tag)
-            for i, token in enumerate(tokenized_text):
+            print(tokenized_text)
+            acc = []
+            for i, token in reversed(list(enumerate(tokenized_text))):
+
                 embed = self.merging_strategy.merge(token_embeddings[i+1])
-                self.embeddings.append((token, embed))
+                if not token.startswith("##"):
+                    if len(acc) != 0:
+                        embed = torch.mean(torch.stack([x[1] for x in acc]), dim=0)
+                        token += [x[0] for x in reversed(acc)]
+                        acc = []
+
+                    self.embeddings.append((token, embed))
+                else:
+                    acc.append((token, embed))
 
     def compute_sim(self):
         """ compute cosine similarity between all vectors """
