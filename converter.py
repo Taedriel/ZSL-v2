@@ -112,7 +112,7 @@ class BERTModel(WordToVecteur):
                 if not token.startswith("##"):
                     if len(acc) != 0:
                         embed = torch.mean(torch.stack([x[1] for x in acc]), dim=0)
-                        token += [x[0] for x in reversed(acc)]
+                        token += "".join([x[0] for x in reversed(acc)])
                         acc = []
 
                     self.embeddings.append((token, embed))
