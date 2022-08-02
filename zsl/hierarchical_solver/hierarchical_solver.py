@@ -1,12 +1,5 @@
-from curses import KEY_A1
 import numpy as np
-
-try:
-    import community.community_louvain as community
-except:
-    pass
-finally:
-    import community.community_louvain as community
+import community.community_louvain as community
 
 from Orange.clustering.hierarchical import data_clustering, WEIGHTED
 from Orange.data import Table, Domain
@@ -101,7 +94,7 @@ class HiCA:
         if root.is_leaf:
             return root
         else:
-            return self.first_child(root.branches[0])
+            return self.__first_child(root.branches[0])
 
 
     def __closest_to(self, cluster):
