@@ -199,7 +199,7 @@ class HiCA:
 
         # do the same on the data
         data_attr, data_meta = [], []
-        whole_data = list(out_cluster_table) + list(self.mystery_embedding)
+        whole_data = list(out_cluster_table) + list(self.mystery_table)
         if keep_cluster_line: whole_data += list(in_cluster_table)
 
         for rowinstance in whole_data:

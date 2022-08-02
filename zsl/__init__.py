@@ -1,6 +1,8 @@
+from misc import *
+from simple_solver import *
 from hierarchical_solver import *
 from word_embeddings import *
-from misc import *
+from test_word_embeddings import *
 
 import logging
 import warnings
