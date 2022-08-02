@@ -168,7 +168,7 @@ class HiCA:
         toguess_cluster = [d["Cluster"] for d in table if d[HiCA.KEY] == HiCA.MYSTERY][0]
         in_cluster_table  = Table.from_list(table.domain, [d for d in table if d["Cluster"].value == toguess_cluster])
         out_cluster_table = Table.from_list(table.domain, [d for d in table if d["Cluster"].value != toguess_cluster])
-        if len(in_cluster_table) == 0 : return [], "cluster is empty"
+        if len(in_cluster_table) <= 1 : return [], "cluster is empty"
 
 
         # Group by computation
