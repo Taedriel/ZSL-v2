@@ -1,7 +1,12 @@
 from curses import KEY_A1
 import numpy as np
 
-import community.community_louvain as community
+try:
+    import community.community_louvain as community
+except:
+    pass
+finally:
+    import community.community_louvain as community
 
 from Orange.clustering.hierarchical import data_clustering, WEIGHTED
 from Orange.data import Table, Domain
@@ -22,7 +27,7 @@ class HiCA:
     SIM_THRESOLD        = 0.3
 
     @staticmethod
-    def left_join(cls, complete_table, supp_info_table, key: str = "embeddings") -> Table:
+    def left_join(complete_table, supp_info_table, key: str = "embeddings") -> Table:
         """add all metas column from supp_info_table to complete_table using key as joint
         """
         assert key in list(map(lambda x : x.name, supp_info_table.domain.metas)), "embeddings name not present in additional data"

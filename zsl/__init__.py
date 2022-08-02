@@ -1,6 +1,6 @@
-from zsl import hierarchical_solver
-from zsl import word_embeddings
-from zsl import misc
+from hierarchical_solver import *
+from word_embeddings import *
+from misc import *
 
 import logging
 import warnings
