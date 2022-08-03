@@ -5,7 +5,7 @@ from wikipedia2vec import Wikipedia2Vec
 from word_embeddings import Downloader
 from word_embeddings import EmbeddingsLoader
 
-__all__ = ["SimpleSolver"]
+__all__ = ["Solver", "OutOfVocabSolver"]
 
 class Solver(EmbeddingsLoader):
 

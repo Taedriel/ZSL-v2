@@ -40,7 +40,7 @@ class WordToVector:
 
         return False
 
-    def convert(self, article_ret : WikipediaArticleRetriever):
+    def convert(self, article_ret : ArticleRetriever):
         raise NotImplementedError
 
     def reset_embeddings(self):
@@ -70,7 +70,7 @@ class FixedEmbedding(WordToVector):
         self.downloader = Downloader(base_addr, file_zipname)
         self.downloader.download()
 
-    def check_embeddings_exist(self, filename : str, article_ret : WikipediaArticleRetriever):
+    def check_embeddings_exist(self, filename : str, article_ret : ArticleRetriever):
         return False
 
     def _one_turn(self, resolve_dict = {}):
