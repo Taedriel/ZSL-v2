@@ -5,8 +5,8 @@ import tqdm
 from typing import List
 
 from .bert_model import BERTModel
-from ..bert_strategy import Sum4LastLayers
-from ..model import WordToVector
+from word_embeddings.bert_strategy import Sum4LastLayers
+from word_embeddings.model import WordToVector
 
 from transformers import BertTokenizer, BertModel
 

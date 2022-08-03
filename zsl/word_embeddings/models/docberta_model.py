@@ -1,7 +1,7 @@
 from typing import List
 
-from ..bert_strategy import Sum4LastLayers
-from ..model import WordToVector
+from word_embeddings.bert_strategy import Sum4LastLayers
+from word_embeddings.model import WordToVector
 from .docbert_model import DocBERTModel
 
 from transformers import RobertaModel, RobertaTokenizer

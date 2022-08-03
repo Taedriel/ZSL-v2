@@ -6,11 +6,11 @@ from typing import Tuple
 
 from scipy.stats import spearmanr
 
-from ..simple_solver.simple_solver import Solver
-from ..word_embeddings.model import WordToVector
-from ..word_embeddings.article import ArticleRetriever
-from ..word_embeddings.embedding_loader import SimilarityMatrix
-from ..word_embeddings.bert_strategy import CosineSim
+from simple_solver.simple_solver import Solver
+from word_embeddings.model import WordToVector
+from word_embeddings.article import ArticleRetriever
+from word_embeddings.embedding_loader import SimilarityMatrix
+from word_embeddings.bert_strategy import CosineSim
 
 __all__ = ["EmbeddingDistanceTest", "SyntacticTest", "SimilarityTest"]
 

@@ -2,7 +2,7 @@ import logging
 import torch
 
 from typing import List
-from ..model import WordToVector, FixedEmbedding
+from word_embeddings.model import WordToVector, FixedEmbedding
 
 from wikipedia2vec import Wikipedia2Vec
 

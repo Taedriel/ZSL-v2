@@ -2,8 +2,10 @@ import torch
 import numpy as np
 
 from wikipedia2vec import Wikipedia2Vec
-from ..word_embeddings import Downloader
-from ..word_embeddings import EmbeddingsLoader
+from word_embeddings import Downloader
+from word_embeddings import EmbeddingsLoader
+
+__all__ = ["SimpleSolver"]
 
 class Solver(EmbeddingsLoader):
 

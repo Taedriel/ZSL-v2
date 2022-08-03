@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 from typing import List
-from ..model import WordToVector, FixedEmbedding
+from word_embeddings.model import WordToVector, FixedEmbedding
 
 __all__ = ["GloVEModel"]
 

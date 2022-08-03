@@ -5,7 +5,7 @@ from typing import List
 from .article import ArticleRetriever
 from .embedding_loader import EmbeddingsLoader
 from .dowloader import Downloader
-from ..misc import dict2csv
+from misc import dict2csv
 
 class WordToVector:
 
