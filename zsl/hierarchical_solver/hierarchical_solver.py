@@ -11,7 +11,12 @@ from typing import Tuple, Dict
 from itertools import chain
 from collections import Counter
 
-class HiCA:
+class WeSeDa:
+
+    """Word Embedding Semantic Decomposition Algorithm, is an algorithm that decomposes an 
+    embedding into a set of others embeddings, by using a hierarchical clustering
+    tree and by clustering the embeddings at a given height.
+    """
 
     GROUP_BY            = "first superclass"
     MYSTERY             = "TOGUESS"
@@ -44,7 +49,6 @@ class HiCA:
                     supp_list_list[i].append("?")
 
         for i, name in enumerate(name_supp_data):
-            # print(f"adding {name}")
             complete_table = complete_table.add_column(StringVariable(name), supp_list_list[i])
 
         return complete_table
@@ -57,15 +61,15 @@ class HiCA:
 
         self.mystery_table = Table.from_numpy(self.prior_knowledge_table.domain, [np.array(self.mystery_embedding)], 
                                                                         Y = None, 
-                                                                        metas = np.char.asarray([[HiCA.MYSTERY, "?", "?"]]))
+                                                                        metas = np.char.asarray([[WeSeDa.MYSTERY, "?", "?"]]))
         if standardize_mystery:
-            toguess_table = self.standardize_first(self.mystery_table)
+            self.mystery_table = self.standardize_first(self.mystery_table)
             
 
         self.table = Table.concatenate([self.prior_knowledge_table, self.mystery_table])
 
         for i in self.table[-1::-1]:
-            if i[HiCA.KEY] == HiCA.MYSTERY:
+            if i[WeSeDa.KEY] == WeSeDa.MYSTERY:
                 self.mystery_index = self.table.index(i)
                 break
 
@@ -157,7 +161,7 @@ class HiCA:
         return counter.most_common(len(lst))
 
     def __one_pass(self, cluster_thresold : float, sim_thresold : float, keep_cluster_line : bool = False) -> Tuple[Table, Dict]:
-        assert HiCA.GROUP_BY in list(map(lambda x: x.name, chain(self.table.domain.metas, 
+        assert WeSeDa.GROUP_BY in list(map(lambda x: x.name, chain(self.table.domain.metas, 
                                                             self.table.domain.variables, 
                                                             self.table.domain.attributes))), "Group by not in the Table !"
         
@@ -165,26 +169,26 @@ class HiCA:
         table, closest, thresold, nb_cluster = self.__clusterize(cluster_thresold)
 
         # Cluster split
-        toguess_cluster = [d["Cluster"] for d in table if d[HiCA.KEY] == HiCA.MYSTERY][0]
+        toguess_cluster = [d["Cluster"] for d in table if d[WeSeDa.KEY] == WeSeDa.MYSTERY][0]
         in_cluster_table  = Table.from_list(table.domain, [d for d in table if d["Cluster"].value == toguess_cluster])
         out_cluster_table = Table.from_list(table.domain, [d for d in table if d["Cluster"].value != toguess_cluster])
         if len(in_cluster_table) <= 1 : return [], "cluster is empty"
 
 
         # Group by computation
-        main_superclass_count_list = self.__compute([row[HiCA.GROUP_BY].value for row in in_cluster_table])
+        main_superclass_count_list = self.__compute([row[WeSeDa.GROUP_BY].value for row in in_cluster_table])
         # equality case with "?", take the second
         ind = 1 if main_superclass_count_list[0][0] == "?" and len(main_superclass_count_list) > 1 else 0
         main_superclass = main_superclass_count_list[ind][0]
 
         main_superclass_table = Table.from_list(self.superclass_embeddings.domain, 
-                                                [i for i in self.superclass_embeddings if i[HiCA.KEY] == main_superclass])
+                                                [i for i in self.superclass_embeddings if i[WeSeDa.KEY] == main_superclass])
         main_superclass_table = Table.concatenate([ in_cluster_table, 
                                                     Table.from_table(out_cluster_table.domain, main_superclass_table)])
 
 
         # thresold computation
-        to_copy_row_instance = [d for d in main_superclass_table if d[HiCA.KEY] == HiCA.MYSTERY][0]
+        to_copy_row_instance = [d for d in main_superclass_table if d[WeSeDa.KEY] == WeSeDa.MYSTERY][0]
         to_copy = list(to_copy_row_instance.attributes())
 
         to_compare_row_instance = [d for d in main_superclass_table if d["Cluster"] == "?"][0]
