@@ -51,7 +51,7 @@ marisa-trie==0.7.7
 matplotlib==3.3.4
 msgpack==1.0.4
 mwparserfromhell==0.6.4
-mxnet==1.9.1
+# mxnet==1.9.1
 nest-asyncio==1.5.5
 networkx==2.5.1
 nltk==3.6.7
@@ -108,8 +108,8 @@ transformers==4.18.0
 typing_extensions==4.1.1
 urllib3==1.26.11
 wcwidth==0.2.5
-wikipedia==1.4.0
-wikipedia2vec==1.0.5
+wikipedia
+wikipedia2vec
 xlrd==2.0.1
 XlsxWriter==3.0.3
 zipp==3.6.0
