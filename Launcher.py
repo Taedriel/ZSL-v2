@@ -1,4 +1,6 @@
 import sys
+
+from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_path_data, getGoogleImages, train_model
 sys.path.append("./zsl")
 
 from typing import List
@@ -33,15 +35,22 @@ def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
     return embedding
 
 def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> List[str]:
-    return [("platypus", 0.89), ("beaver", 0.23)]
+
+    PATH_DATA, classes = get_path_data(CUB=False, IMAGES=True, OMNIGLOT=False)
+    getGoogleImages(classes)
+    cleanImages(PATH_DATA, classes)
+    supportSet = train_model(PATH_DATA, classes)
+    predicted_class = evaluate(supportSet, classes)
+
+    return [predicted_class]
 
 def run_pipeline(image_path : str, intermediate_result = False):
 
-    text_embedding = image_to_text_embedding(image_path)
+    #text_embedding = image_to_text_embedding(image_path)
 
-    plausible_classes = text_embedding_to_classes(text_embedding)
+    #plausible_classes = text_embedding_to_classes(text_embedding)
 
-    return classes_to_prediction(image_path, plausible_classes)
+    return classes_to_prediction(image_path, ["dog"])
 
 def preprocess():
 
