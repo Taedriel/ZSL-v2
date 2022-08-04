@@ -10,7 +10,7 @@ import wikipedia
 import warnings
 import logging
 import pickle 
-import tqdm
+from tqdm import tqdm
 
 wikipedia.set_rate_limiting(True)
 warnings.filterwarnings("ignore", category=UserWarning, module='wikipedia')
@@ -36,8 +36,6 @@ class ArticleRetriever:
     retrieve in a dict using the name given. Further call to this retriever will 
     then load the previously saved file if it hasn't been deleted.
     """
-
-    article_dir = "./article"
 
     def __init__(self, name : str = None, list_title : List[str] = []):
 
@@ -67,7 +65,8 @@ class ArticleRetriever:
 
     def get_filename(self) -> str:
         """ return the filename of the file where article are saved"""
-        return join(WikipediaArticleRetriever.article_dir, self.name)
+        # return join(WikipediaArticleRetriever.article_dir, self.name)
+        return self.name
 
     def load_article(self, title : str, force_reload : bool = False) -> customArticle:
         """ retrieve an article from wikipedia. If forcce reload is specified, re check the article 
@@ -128,7 +127,9 @@ class WikipediaArticleRetriever(ArticleRetriever):
 
     def get_filename(self) -> str:
         """ return the filename of the file where article are saved"""
-        return join(WikipediaArticleRetriever.article_dir, "Wiki-" + self.name)
+        from os import sep
+        path = self.name.split(sep)
+        return join(*path[:-1], "Wiki-" + path[-1])
 
     def _retrieve_article(self, title : str, closed_list : List = []) -> Tuple[str, str, bool]: 
         closed_list.append(title)
@@ -145,8 +146,9 @@ class WikipediaArticleRetriever(ArticleRetriever):
             else: return (None, None, None)
 
         except wikipedia.DisambiguationError as e:
-            logging.warning(f"{title} is ambiguous, fallback on {e.options[0]}")
+            logging.warning(f"{title} is ambiguous, skipping...")
             return (None, None, None)
+            logging.warning(f"{title} is ambiguous, fallback on {e.options[0]}")
             # if e.options[0] is not None and e.options[0] not in closed_list:
             #     res = self._retrieve_article(e.options[0], closed_list)
             #     return (res[0], res[1], True)
@@ -159,7 +161,9 @@ class WordNetArticleRetriever(ArticleRetriever):
 
     def get_filename(self) -> str:
         """ return the filename of the file where article are saved"""
-        return join(WikipediaArticleRetriever.article_dir, "Word-" + self.name)
+        from os import sep
+        path = self.name.split(sep)
+        return join(*path[:-1], "Word-" + path[-1])
 
     def _retrieve_article(self, title: str, closed_list : List = []) -> Tuple[str, str, bool]:
         result = wordnet.synsets(title)

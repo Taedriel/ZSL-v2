@@ -1,6 +1,6 @@
 import torch
 import logging
-import tqdm
+from tqdm import tqdm
 
 from typing import Tuple, List, Dict
 from .bert_strategy import SimilarityStrategy

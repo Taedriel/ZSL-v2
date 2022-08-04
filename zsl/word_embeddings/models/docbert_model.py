@@ -1,8 +1,9 @@
 
 import torch
 import logging
-import tqdm
+from tqdm import tqdm
 from typing import List
+from math import ceil
 
 from .bert_model import BERTModel
 from word_embeddings.bert_strategy import Sum4LastLayers
@@ -71,7 +72,7 @@ class DocBERTModel(BERTModel):
                 self.embeddings[tag] = self._one_pass(self.tokenizer(tag, return_tensors = "pt"))
                 continue
 
-            nb_pass = math.ceil(nb_token / self.max_size)
+            nb_pass = ceil(nb_token / self.max_size)
             logging.info(f"{tag} is {nb_pass} pass")
 
             stop = 50

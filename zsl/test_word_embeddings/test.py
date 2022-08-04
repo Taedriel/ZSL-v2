@@ -1,6 +1,6 @@
 import logging
 import torch
-import tqdm
+from tqdm import tqdm
 from time import perf_counter
 from typing import Tuple
 

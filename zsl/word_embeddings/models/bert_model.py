@@ -1,7 +1,7 @@
 
 import torch
 import logging
-import tqdm
+from tqdm import tqdm
 
 from typing import List
 from word_embeddings.bert_strategy import Sum4LastLayers
@@ -13,8 +13,6 @@ from transformers import BertTokenizer, BertModel
 __all__ = ["BERTModel"]
 
 class BERTModel(WordToVector):
-
-    temp_dir = "./temp"
 
     def __init__(self, list_tag : List[str], big: bool = False, window : int = 100):
         super(BERTModel, self).__init__(list_tag)
