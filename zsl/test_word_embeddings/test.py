@@ -65,7 +65,7 @@ class EmbeddingDistanceTest(Test):
 
         sim_list = []
 
-        for i, idsa in tqdm(enumerate(ids), total = len(ids), desc=f"{'listing sim matrix':30}"):
+        for i, idsa in tqdm(enumerate(ids), total = len(ids), desc=f"{'listing sim matrix':30}", ncols=80):
             for j, idsb in enumerate(ids):
 
                 if i == j: continue 
@@ -96,7 +96,7 @@ class SyntacticTest(Test):
         solver = Solver(self.save_file)
         top1, top3, top5, top10 = 0, 0, 0, 0
 
-        for w1, w2, w3, w4 in tqdm(self.relations, total=len(self.relations), desc=f"{'calculating relations':30}"):
+        for w1, w2, w3, w4 in tqdm(self.relations, total=len(self.relations), desc=f"{'calculating relations':30}", ncols=80):
 
             w1_emb = model.get_embedding_of(w1).numpy()
             w2_emb = model.get_embedding_of(w2).numpy()
@@ -140,7 +140,7 @@ class SimilarityTest(Test):
 
         sim_computer = SimilarityMatrix(self.save_file, CosineSim())
 
-        for w1, w2, i in tqdm(self.pair, total=len(self.pair), desc=f"{'calculating pair':30}"):
+        for w1, w2, i in tqdm(self.pair, total=len(self.pair), desc=f"{'calculating pair':30}", ncols=80):
             sim = sim_computer.sim_between(w1, w2)
 
             sim_list.append(sim)

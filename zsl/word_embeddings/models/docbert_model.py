@@ -52,7 +52,7 @@ class DocBERTModel(BERTModel):
 
         logging.info("Starting converting tokens...")
         nb_token = len(self.list_tags)
-        for i, tag in tqdm(enumerate(self.list_tags), total = nb_token, desc=f"{'converting to embedding':30}"):
+        for i, tag in tqdm(enumerate(self.list_tags), total = nb_token, desc=f"{'converting to embedding':30}", ncols=80):
             
             if tag in self.embeddings: continue
 

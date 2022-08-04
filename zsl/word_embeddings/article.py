@@ -91,7 +91,7 @@ class ArticleRetriever:
         nb_success = 0
 
         nb_article = len(self.list_title)
-        for i, title in tqdm(enumerate(self.list_title), total=nb_article, desc=f"{'loading articles':30}"):
+        for i, title in tqdm(enumerate(self.list_title), total=nb_article, desc=f"{'loading articles':30}", ncols=80):
             self.load_article(title, force_reload)
 
             if self.articles_map[title].summary is not None: 
