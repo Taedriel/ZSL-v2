@@ -3,7 +3,7 @@ from matplotlib.patches import Rectangle
 import numpy as np
 from statistics import mean
 import torch
-import utils
+from torchvision import utils
 from sklearn.metrics import classification_report, confusion_matrix
 from os import listdir
 import re

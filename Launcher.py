@@ -1,11 +1,11 @@
 import sys
 
-from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_path_data, getGoogleImages, train_model
+from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_metainfo, downloadGoogleImages, train_model
 sys.path.append("./zsl")
 
 from typing import List
 from torch import Tensor
-from Orange.data import Table
+#from Orange.data import Table
 
 import zsl
 
@@ -15,11 +15,7 @@ runtime = {}
 def check_file_presence():
     from os.path import exists
 
-    file_to_check = [
-        "/content/Aroub-average.csv",
-        "/content/class_map_imagenet.csv",
-        "/content/custom-wikipedia2vec-300_superclass.csv"
-    ]
+    file_to_check = []
 
     for file in file_to_check:
         if not exists(file):
@@ -37,11 +33,11 @@ def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
 
 def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> List[str]:
 
-    PATH_DATA, classes = get_path_data(CUB=False, IMAGES=True, OMNIGLOT=False)
-    getGoogleImages(classes)
-    cleanImages(PATH_DATA, classes)
-    supportSet = train_model(PATH_DATA, classes)
-    predicted_class = evaluate(supportSet, classes)
+    downloadGoogleImages(plausible_classes, reset=True)
+    PATH_DATA, conversion_type, _ = get_metainfo(CUB=False, IMAGES=True, OMNIGLOT=False)
+    cleanImages(PATH_DATA, plausible_classes, conversion_type)
+    supportSet = train_model(PATH_DATA, plausible_classes)
+    predicted_class = evaluate(supportSet, plausible_classes)
 
     return [predicted_class]
 
@@ -51,15 +47,10 @@ def run_pipeline(image_path : str, intermediate_result = False):
 
     #plausible_classes = text_embedding_to_classes(text_embedding)
 
-    return classes_to_prediction(image_path, ["dog"])
+    return classes_to_prediction(image_path, ["Africanleopard", "Ape"])
 
 def preprocess():
-
-    generic_table = Table("/content/Aroub-average.csv")
-    supp_info_table = Table("/content/class_map_imagenet.csv")
-
-    runtime["prior_knowledge_table"] = zsl.HiCA.left_join(generic_table, supp_info_table)
-    runtime["superclass_embeddings"] = Table("/content/custom-wikipedia2vec-300_superclass.csv")
+    pass
 
 def generate_embeddings():
     pass

@@ -20,8 +20,9 @@ imageResize = (224, 224)
 
 def getImageTensor(path, conversion_type):
 
+  valid_conversion = ["CUB", "IMG"]
   convert = None
-  if conversion_type == "CUBLike":
+  if conversion_type in valid_conversion:
     convert = transforms.Compose([
                                   transforms.ToTensor(),
                                   transforms.Normalize((0, 0, 0), (1, 1, 1))

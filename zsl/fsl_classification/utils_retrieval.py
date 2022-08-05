@@ -1,9 +1,12 @@
 from urllib import request
-import tqdm
+from tqdm import tqdm
 from os import makedirs
-from shutil import rmtree
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup 
+from chromedriver_py import binary_path 
+import time
 
 from .constants import *
 
@@ -16,8 +19,18 @@ def getParser(classeName):
   chrome_options.add_argument('--no-sandbox')
   chrome_options.add_argument('--disable-dev-shm-usage')
 
-  driver = webdriver.Chrome('chromedriver', options=chrome_options)
+  service_object = Service(binary_path)
+  driver = webdriver.Chrome('chromedriver', options=chrome_options, service=service_object)
   driver.get(site)
+  time.sleep(2)
+
+  # accept cookies
+  try:
+    driver.find_element(By.CLASS_NAME, "VfPpkd-LgbsSe.VfPpkd-LgbsSe-OWXEXe-k8QpJ.VfPpkd-LgbsSe-OWXEXe-dgl2Hf.nCP5yc.AjY5Oe.DuMIQc.LQeN7.Nc7WLe").submit()
+  except:
+    pass
+
+  time.sleep(3)
   driver.execute_script("window.scrollBy(0, document.body.scrollHeight)")
   soup = BeautifulSoup(driver.page_source, 'html.parser')
   driver.close()
@@ -40,11 +53,12 @@ def getClassImages(path, classeName):
   img_tags = soup.find_all("img", class_="rg_i")
 
   for index in range(0, len(img_tags)):
+
     try:
-        request.urlretrieve(img_tags[index]['src'], path+classeName+"/"+str(classeName+str(index))+".jpg")
-        imagesNumber+=1
+      request.urlretrieve(img_tags[index]['src'], path+classeName+"/"+str(classeName+str(index))+".jpg")
+      imagesNumber+=1
     except Exception as e:
-        pass
+      print(e)
 
   return imagesNumber
 
@@ -52,19 +66,15 @@ def getClassImages(path, classeName):
 def getImagesGoogle(classes):
 
   imagesNumber = 0
-  rmtree(PATH_IMAGES, ignore_errors=False)
-  makedirs(PATH_IMAGES)
-
-  print("downloading images...")
-
+  print("downloading images...\n")
   for classe in tqdm(classes):
 
     try:
       classeName = classe.replace(" ", "")
       makedirs(PATH_IMAGES+classeName)
       imagesNumber += getClassImages(PATH_IMAGES, classeName)
-    except:
-      pass
+    except Exception as e:
+      print(e)
 
   return imagesNumber
 
@@ -76,4 +86,4 @@ def getClassesImagesURLLIB(classes, download=True):
   if download:
     imagesNumber = getImagesGoogle(classes)
   
-  print("\n"+str(imagesNumber) + " images were downloaded. " + str(imagesNumber/len(classes)) + " per classes")
+  print("\n"+str(imagesNumber) + " images were downloaded. " + str(imagesNumber/len(classes)) + " per classes", "\n")

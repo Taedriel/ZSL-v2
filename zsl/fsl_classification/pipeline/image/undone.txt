@@ -1,1 +1,0 @@
-This is a dummy file for the program to check whether the images are downloaded or not

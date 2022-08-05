@@ -30,7 +30,7 @@ class ModelUtils:
 
 
   #TODO CAN CHANGE THE RELOADING MODEL HERE
-  def getModelName(context, cuda_):
+  def getModelName(self, context, cuda_):
 
     valid_context = ["train", "clean"]
     if context in valid_context:

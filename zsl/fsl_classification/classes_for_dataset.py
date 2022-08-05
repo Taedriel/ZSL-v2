@@ -64,11 +64,13 @@ Among other thing, this class add negative examples to the support set after ext
 """
 class CleaningSetProvider:
 
-  def __init__(self, pathToImage, numberOfPositives, numberOfNegatives):
+  def __init__(self, pathToImage, numberOfPositives, numberOfNegatives, conversion_type):
     self.pathToNegatives = HEAD+"pipeline/ImageNetFetched/"
     self.path = pathToImage
     self.nbNegative = numberOfNegatives
     self.nbPositive = numberOfPositives
+
+    self.type = conversion_type
 
 
   def getSubSetOfImages(self, path):
@@ -83,7 +85,7 @@ class CleaningSetProvider:
 
     images = listdir(pathToClass)
     for i in range(0, self.nbNegative):
-      supportSet.append((getImageTensor(pathToClass+images[i]), label))
+      supportSet.append((getImageTensor(pathToClass+images[i], conversion_type=self.type), label))
 
     return supportSet
 
@@ -111,12 +113,12 @@ class CleaningSetProvider:
     images = self.getSubSetOfImages(pathToClass)
     originalLenght = len(images)
 
-    query = (getImageTensor(pathToClass+images[q_index]), label)
+    query = (getImageTensor(pathToClass+images[q_index], conversion_type=self.type), label)
     images.remove(images[q_index])
 
     support = []
     for image in images:
-      support.append((getImageTensor(pathToClass+image), label))
+      support.append((getImageTensor(pathToClass+image, conversion_type=self.type), label))
     
     support = self.addNegativeClasses(support)
 

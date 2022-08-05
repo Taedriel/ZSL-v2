@@ -236,7 +236,7 @@ class Cleaner(ModelUtils):
         self.meta_set = meta_set
         self.threshold = 0.5
 
-        self.model_t = Trainer(path_model, model, True)
+        self.model_t = Trainer(path_model, model, cuda_, True)
         self.model_saver = ModelSaver(path_model)
 
         self.falseVector = []

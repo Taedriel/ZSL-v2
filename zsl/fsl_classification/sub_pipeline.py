@@ -1,5 +1,7 @@
-from os import listdir, remove
+from os import listdir, makedirs
+from shutil import rmtree
 from random import randint
+from turtle import down
 
 from .constants import *
 from .utils import *
@@ -10,34 +12,41 @@ from .classes_for_dataset import CleaningSetProvider
 from .fsl_dataset_managment import *
 from .globals import *
 
-__all__ = ["get_path_data", "getGoogleImages", "cleanImages", "train_model", "evaluate"]
+__all__ = ["get_metainfo", "downloadGoogleImages", "cleanImages", "train_model", "evaluate"]
 
-def get_path_data(CUB, IMAGES, OMNIGLOT):
+def downloadGoogleImages(classes, reset=False):
+
+    if reset:
+        rmtree(PATH_IMAGES, ignore_errors=False)
+        makedirs(PATH_IMAGES)
+
+    new_classes = list(set(classes) - set(listdir(PATH_IMAGES)))
+    assert new_classes != [], "no classes to download \n"
+
+    print("new classes to download :", new_classes, "\n")
+    getClassesImagesURLLIB(new_classes, download=True)
+
+def get_metainfo(CUB, IMAGES, OMNIGLOT):
     
     listClass = []
 
     if CUB or IMAGES:
         PATH_DATA = HEAD+"pipeline/model/data/CUB/images/" if CUB else HEAD+"pipeline/images/"
+        conversion_type = "CUB" if CUB else "IMG"
         listClass = listdir(PATH_DATA)
 
     elif OMNIGLOT:
         PATH_DATA = HEAD+"pipeline/model/dataO/omniglot-py/images_background/" 
+        conversion_type = "OMNI"
         listAlphabet = listdir(PATH_DATA)
         choosenAlphabet = listAlphabet[randint(0, len(listAlphabet)-1)]
         listClass = [choosenAlphabet+"/"+char for char in listdir(PATH_DATA+choosenAlphabet)]
 
-    return PATH_DATA, listClass
+    return (PATH_DATA, conversion_type, listClass)
 
-def getGoogleImages(classes):
+def cleanImages(PATH_DATA, classes, conversion_type):
 
-    if "undone.txt" in listdir(HEAD+PATH_IMAGES):
-        getClassesImagesURLLIB(classes, retrieval_not_done=True)
-        remove(HEAD+"pipeline/image/undone.txt")
-
-
-def cleanImages(PATH_DATA, classes):
-
-    provider = CleaningSetProvider(PATH_DATA, 20, 2)
+    provider = CleaningSetProvider(PATH_DATA, 20, 2, conversion_type)
     meta_set = provider.getSetOfCleaningSets([classes[randint(0, len(classes)-1)].replace(" ", "")])
 
     rows, columns = meta_set.lenght()
