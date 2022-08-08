@@ -1,4 +1,5 @@
 import sys
+import os
 
 from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_metainfo, downloadGoogleImages, train_model
 sys.path.append("./zsl")
@@ -66,6 +67,8 @@ def run_pipeline(image_path : str, intermediate_result = False):
 
 
 def preprocess():
+
+    os.makedirs("./zsl/fsl_classification/pipeline/images/", exist_ok=True)
 
     generic_table = Table("./ressources/Ayoub-average.csv")
     supp_info_table = Table("./ressources/class_map_imagenet.csv")

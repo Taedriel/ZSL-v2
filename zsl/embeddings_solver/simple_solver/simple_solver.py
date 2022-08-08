@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 
-import zsl.word_embeddings.dowloader as d
-import zsl.word_embeddings.model as m
+from zsl.word_embeddings.dowloader import Downloader
+from zsl.word_embeddings.model import EmbeddingsLoader
 from wikipedia2vec import Wikipedia2Vec
 
 __all__ = ["Solver", "OutOfVocabSolver"]
 
-class Solver(m.EmbeddingsLoader):
+class Solver(EmbeddingsLoader):
     """simple solver that compare the target embeddings to all the other embeddings to found the closest.
     """
 
@@ -99,7 +99,7 @@ class Solver(m.EmbeddingsLoader):
         target_embeddings = self.embeddings[target]
         return float(np.square(np.subtract(embedding, target_embeddings)).mean())
 
-class OutOfVocabSolver(d.Downloader):
+class OutOfVocabSolver(Downloader):
 
     DEFAULT_MIN_LIST_RESULT = 10
 
