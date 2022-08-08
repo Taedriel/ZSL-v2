@@ -1,6 +1,12 @@
 # THIS FILE IS NOT INTENDED FOR USE IN THE PIPELINE AND IS ONLY FOR SEPARATE TESTING
 
-from fsl_classification import constants, classes_for_model
+import os, random
+from .constants import *
+from .classes_for_model import *
+from .globals import *
+from .utils import *
+from .utils_dataset import *
+from .fsl_dataset_managment import getSets
 
 CUB, IMAGES, OMNIGLOT = False, True, False
 PATH_DATA = ""
@@ -27,8 +33,7 @@ plot_images(justSupport, title="support set", images_per_row=N_SHOT)
 plot_images(justQuery, title="query set", images_per_row=N_QUERY)
 
 training_model = Trainer(PATH_MODEL, model, False)
-
-raining_model.resetModel(reset_by_param=False)
+training_model.resetModel(reset_by_param=False)
 
 trainingNeeded = True
 if trainingNeeded:

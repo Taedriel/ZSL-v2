@@ -58,7 +58,7 @@ def getClassImages(path, classeName):
       request.urlretrieve(img_tags[index]['src'], path+classeName+"/"+str(classeName+str(index))+".jpg")
       imagesNumber+=1
     except Exception as e:
-      print(e)
+      pass
 
   return imagesNumber
 
@@ -74,7 +74,7 @@ def getImagesGoogle(classes):
       makedirs(PATH_IMAGES+classeName)
       imagesNumber += getClassImages(PATH_IMAGES, classeName)
     except Exception as e:
-      print(e)
+      pass
 
   return imagesNumber
 

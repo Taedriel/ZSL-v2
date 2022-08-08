@@ -20,7 +20,7 @@ from .utils_dataset import getImageTensor
 ]
 """
 
-def getFolderTensorsForTraining(path, supportNumber, queryNumber, label):
+def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type):
 
   images = listdir(path)
   images.sort(key=natural_keys)
@@ -29,17 +29,19 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label):
   for i in range(0, supportNumber):
     ridx = randint(0, len(images)-1)
     try:
-      support_i.append( (getImageTensor(path+images[ridx]), label) )
+      support_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
-      pass
+      print("support image could not be loaded")
+
     images.remove(images[ridx])
   
   for i in range(0, queryNumber):
     ridx = randint(0, len(images)-1)
     try:
-      query_i.append( (getImageTensor(path+images[ridx]), label) )
+      query_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
-      pass
+      print("query image could not be loaded")
+
     images.remove(images[ridx])
 
   return support_i, query_i
@@ -53,11 +55,11 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label):
 
 @return the support and query set
 """
-def getSets(paths, supportNumber, queryNumber):
+def getSets(paths, supportNumber, queryNumber, conversion_type):
 
   supportSet, querySet = [], []
   for label, path in enumerate(paths):
-    Si, Qi = getFolderTensorsForTraining(path, supportNumber, queryNumber, label)
+    Si, Qi = getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type)
     supportSet.append(Si)
     querySet.append(Qi)
 

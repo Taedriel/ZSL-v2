@@ -6,7 +6,7 @@ from torch import stack, tensor, save, no_grad
 from torch.nn import BCELoss
 
 from random import randint
-import tqdm
+from tqdm import tqdm
 import itertools
 
 
@@ -60,7 +60,8 @@ class Trainer(ModelUtils):
     def resetModel(self, reset_by_param=False):
 
         if not reset_by_param:
-            _, model, opti = self.model_saver.loadModel(super().getModelName(self.cuda_, "train"), self.model.metric, self.optimizer)
+            modelName = super().getModelName("train", self.cuda_)
+            _, model, opti = self.model_saver.loadModel(modelName, self.model.metric, self.optimizer)
             self.model.metric, self.optimizer = model, opti
         else:
             self.model.metric = super().resetModelParam(self.model.metric)
@@ -202,18 +203,17 @@ class Tester(ModelUtils):
 
         return "\n accuracy :"+str(100.0*correct/(N_WAY*N_QUERY)), pred_labels, query_labels, correctPreds, incorrectPreds, indexIncorrectQuery
         
-    def queryEvaluation(self, supportSet, querySet):
+    def queryEvaluation(self, supportSet, query):
 
         triplets = []
         self.model.eval()
         with no_grad():
 
-            query, queryClass = querySet
             for imageInfo in list(itertools.chain(*supportSet)):
 
                 image, imageClass = imageInfo
                 query, image = super().getImages(query, image)
-                w = self.model.createCombinedVector(query, image)
+                w, _, _ = self.model.createCombinedVector(query, image)
                 p = self.model(w)
                 triplets.append((imageClass, p))
             
@@ -269,7 +269,8 @@ class Cleaner(ModelUtils):
     #TODO CAN CHANGE THE RELOADING MODEL HERE(cleaning context)
     def getPredictionsForOneQuery(self, Eij, indexSet):
 
-        _, model_, opti = self.model_saver.loadModel(super().getModelName(self.cuda_, "clean"), self.model_t.model.metric, self.model_t.optimizer)
+        modelName = super().getModelName("clean", self.cuda_)
+        _, model_, opti = self.model_saver.loadModel(modelName, self.model_t.model.metric, self.model_t.optimizer)
         self.model_t.model.metric, self.model_t.optimizer = model_, opti
 
         self.model_t.training(Eij[0], set_i=indexSet) 

@@ -21,10 +21,10 @@ def downloadGoogleImages(classes, reset=False):
         makedirs(PATH_IMAGES)
 
     new_classes = list(set(classes) - set(listdir(PATH_IMAGES)))
-    assert new_classes != [], "no classes to download \n"
 
-    print("new classes to download :", new_classes, "\n")
-    getClassesImagesURLLIB(new_classes, download=True)
+    if new_classes != []:
+        print("new classes to download :", new_classes, "\n")
+        getClassesImagesURLLIB(new_classes, download=True)
 
 def get_metainfo(CUB, IMAGES, OMNIGLOT):
     
@@ -66,31 +66,30 @@ def cleanImages(PATH_DATA, classes, conversion_type):
     simM = cleaner.cleanSets()
 
 
-def train_model(PATH_DATA, classes):
+def train_model(PATH_DATA, classes, conversion_type):
 
     supportClasses = [PATH_DATA+class_+"/" for class_ in classes]
     N_SHOT = getMin(supportClasses)
-    supportSet, _ = getSets(supportClasses, N_SHOT, 0)
+    supportSet, _ = getSets(supportClasses, N_SHOT, 0, conversion_type)
 
     print("N_SHOT IS CONFIGURED TO BE", N_SHOT)
 
     justSupport = getOnlyImages(supportSet)
     plot_images(justSupport, title="support set", images_per_row=5)
-
     training_model.training(supportSet, (0, 0), 0)
 
     return supportSet
 
 
-def evaluate(supportSet, classes):
+def evaluate(image_path, supportSet, classes, conversion_type):
 
-    PATH_TO_UNKNOWN = HEAD+"pipeline/unkown image/"
+    PATH_TO_UNKNOWN = image_path
     queries = listdir(PATH_TO_UNKNOWN)
-    query = getImageTensor(PATH_TO_UNKNOWN+queries[randint(0, len(queries)-1)]).unsqueeze(0)
+    query = getImageTensor(PATH_TO_UNKNOWN+queries[randint(0, len(queries)-1)], conversion_type=conversion_type).unsqueeze(0)
     plot_images(query, title="unkown image", images_per_row=1)
 
     evaluation_model = Tester(training_model.model)
-    predictedLabel = evaluation_model.queryEvaluation(supportSet, [query])
+    predictedLabel = evaluation_model.queryEvaluation(supportSet, query)
 
     # possible error with classes[predictedLabel] to check thourougly
     return classes[predictedLabel]
