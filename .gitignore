@@ -1,5 +1,7 @@
 __pycache__/
 venv/
 all/
-.directory
 ZSL.log
+zsl/fsl_classification/pipeline/images
+zsl/fsl_classification/pipeline/ImageNetFetched
+zsl/fsl_classification/pipeline/unknown image
