@@ -8,6 +8,8 @@ from wikipedia2vec import Wikipedia2Vec
 __all__ = ["Solver", "OutOfVocabSolver"]
 
 class Solver(m.EmbeddingsLoader):
+    """simple solver that compare the target embeddings to all the other embeddings to found the closest.
+    """
 
     DEFAULT_MIN_LIST_RESULT = 10
 
@@ -15,6 +17,18 @@ class Solver(m.EmbeddingsLoader):
         super(Solver, self).__init__(embeddings)
 
     def get_nearest_embedding_of(self, embedding, nb = 10):
+        """return the top nearest embeddings compared to all other from the embeddings file
+
+        Args:
+            embedding (List[float]): the embedding to compare
+            nb (int, optional): the number of element in the list. Defaults to 10.
+
+        Raises:
+            Exception: if there are not enoug embedding to fill the list
+
+        Returns:
+            List[float]: a list of most similar embeddings 
+        """
 
         if nb > len(self.embeddings):
             raise Exception("nb too high, not enough token")
@@ -38,16 +52,50 @@ class Solver(m.EmbeddingsLoader):
             print(f"\t{i[0]:12}: {round(float(i[1]) * 100, 3)}%")
     
     def score(self, embedding, target):
+        """return the cosine similarity between two embeddings>
+
+        This method was intended to be use as a score function
+
+        Args:.
+            embedding (List[float]): the first embedding
+            target (List[float]): the second embedding to compare with
+
+        Returns:
+            float: the score, i.e. the cosine similarity of the two embedding
+        """
         target_embeddings = self.embeddings[target]
 
         cos = torch.nn.CosineSimilarity(dim=0)
         return float(cos(embedding, target_embeddings))
 
     def least_squared_score(self, embedding, target):
+        """return the least square between two embeddings.
+
+        This method was intended to be use as a score function
+
+
+        Args:.
+            embedding (List[float]): the first embedding
+            target (List[float]): the second embedding to compare with
+
+        Returns:
+            float: the score, i.e. the least squared of the two embedding
+        """
         target_embeddings = self.embeddings[target]
         return float(np.linalg.norm(target_embeddings - embedding))
 
     def mean_squared_score(self, embedding, target):
+        """return the mean squared between two embeddings.
+
+        This method was intended to be use as a score function
+
+        Args:.
+            embedding (List[float]): the first embedding
+            target (List[float]): the second embedding to compare with
+
+        Returns:
+            float: the score, i.e. the least squared of the two embedding
+        """
         target_embeddings = self.embeddings[target]
         return float(np.square(np.subtract(embedding, target_embeddings)).mean())
 
