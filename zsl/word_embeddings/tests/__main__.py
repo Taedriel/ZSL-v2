@@ -1,9 +1,12 @@
 import gc
-import logging
-from typing import List
+
 from . import *
-from word_embeddings.article import *
-from word_embeddings.models import * 
+from ..article import *
+from ..models import * 
+from typing import List
+
+import logging
+log = logging.getLogger(__name__)
 
 def all_models_gen(list_int):
     if 0 in list_int: yield BERTModel(    [], big = False,    window = 0  )    
@@ -68,6 +71,7 @@ if args.art_retriever == "wi" or args.art_retriever == None:
 elif args.art_retriever == "wo":
     retriever = WordNetArticleRetriever()
 
+log.info(f"starting tests with {args.models} on {args.tests}")
 for model in all_models_gen(args.models):
     split_test(f"{model.model_size} {model.window_size}")
     TestPipeline(model, retriever, [t for i, t in enumerate(TestPipeline.list_test) if i in args.tests]).execute()

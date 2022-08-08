@@ -1,16 +1,17 @@
-from typing import List, Tuple
-from os.path import exists, join
-
+import wikipedia
+import warnings
+import pickle 
 import nltk
+
 nltk.download('omw-1.4')
 nltk.download('wordnet')
 from nltk.corpus import wordnet
-
-import wikipedia
-import warnings
-import logging
-import pickle 
+from typing import List, Tuple
+from os.path import exists, join
 from tqdm import tqdm
+
+import logging
+log = logging.getLogger(__name__)
 
 wikipedia.set_rate_limiting(True)
 warnings.filterwarnings("ignore", category=UserWarning, module='wikipedia')
@@ -50,15 +51,15 @@ class ArticleRetriever:
     def _load(self):
         if not exists(self.get_filename()):
             self.articles_map = {}
-            logging.info(f"creating file {self.get_filename()}")
+            log.info(f"creating file {self.get_filename()}")
         else:
             with open(self.get_filename(), "rb") as mapfile:
                 self.articles_map = pickle.load(mapfile)
                 assert(type(self.articles_map) == type(dict()))
-            logging.info(f"loading file {self.get_filename()} with {len(self.articles_map)} articles")
+            log.info(f"loading file {self.get_filename()} with {len(self.articles_map)} articles")
     
     def set_list_vocab(self, new_name : str, list_title : List[str]):
-        logging.info("changing vocab, reloading file...")
+        log.info("changing vocab, reloading file...")
         self.list_title : List[str] = list_title
         self.name = new_name
         self._load()
@@ -87,7 +88,7 @@ class ArticleRetriever:
     def load_all_articles(self, force_reload : bool = False) -> None:
         """retrieve all article from the vocab from sources"""
         
-        logging.info(f"Starting loading articles... [Force reload : {force_reload}]")
+        log.info(f"Starting loading articles... [Force reload : {force_reload}]")
         nb_success = 0
 
         nb_article = len(self.list_title)
@@ -97,7 +98,7 @@ class ArticleRetriever:
             if self.articles_map[title].summary is not None: 
                 nb_success += 1
 
-        logging.info(f"Finished loading {nb_success} article(s) / {nb_article} ({round(nb_success / nb_article * 100, 1)}%)!")
+        log.info(f"Finished loading {nb_success} article(s) / {nb_article} ({round(nb_success / nb_article * 100, 1)}%)!")
         return self.modified
 
     def __call__(self, force_reload : bool = False) -> None:
@@ -116,7 +117,7 @@ class ArticleRetriever:
         
     def save(self):
         """save the articles in a binary format using pickle"""
-        logging.info(f"saving the file {self.get_filename()}")
+        log.info(f"saving the file {self.get_filename()}")
         with open(self.get_filename(), "wb") as mapfile:
             pickle.dump(self.articles_map, mapfile)
 
@@ -140,15 +141,15 @@ class WikipediaArticleRetriever(ArticleRetriever):
         except wikipedia.PageError as e:
             search_result = wikipedia.search(title, suggestion = False)
 
-            logging.warning(f"{title} misspelled or article missing. Best find is {search_result[0]}")
+            log.warning(f"{title} misspelled or article missing. Best find is {search_result[0]}")
             if search_result[0] is not None and search_result[0] not in closed_list:            
                 return self._retrieve_article(search_result[0], closed_list)  
             else: return (None, None, None)
 
         except wikipedia.DisambiguationError as e:
-            logging.warning(f"{title} is ambiguous, skipping...")
+            log.warning(f"{title} is ambiguous, skipping...")
             return (None, None, None)
-            logging.warning(f"{title} is ambiguous, fallback on {e.options[0]}")
+            log.warning(f"{title} is ambiguous, fallback on {e.options[0]}")
             # if e.options[0] is not None and e.options[0] not in closed_list:
             #     res = self._retrieve_article(e.options[0], closed_list)
             #     return (res[0], res[1], True)

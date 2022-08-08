@@ -1,6 +1,8 @@
 from os.path import exists, abspath
 from os import system
+
 import logging
+log = logging.getLogger(__name__)
 
 __all__ = ["Downloader"]
 
@@ -16,23 +18,23 @@ class Downloader:
          If the file is already downloaded, only return the path
          """
         self.path = abspath(self.__unzip_filename)
-        logging.info(f"Checking the presence of {self.path}...")
+        log.info(f"Checking the presence of {self.path}...")
         if exists(self.path):
-            logging.info("File found ! No download needed")
+            log.info("File found ! No download needed")
             return self.path
 
-        logging.info("File Not present, need to download")
-        logging.info(f"Starting to download {self.__address}{self.__unzip_filename}")
+        log.info("File Not present, need to download")
+        log.info(f"Starting to download {self.__address}{self.__unzip_filename}")
         try:
             ret = system(f"wget {self.__address}{self.__zip_filename}")
             if ret != 0:
                 raise SystemError
         except:
-            logging.error(f"can't retrieve the file {self.__zip_filename}")
+            log.error(f"can't retrieve the file {self.__zip_filename}")
             raise SystemError(f"can't retrieve the file {self.__zip_filename}")
 
-        logging.info(f"Download finished")
-        logging.info(f"Starting unziping the file")
+        log.info(f"Download finished")
+        log.info(f"Starting unziping the file")
 
         ext = self.__zip_filename[-4:]
         if ext == ".zip":
@@ -45,8 +47,8 @@ class Downloader:
             if ret != 0:
                 raise SystemError
         except:
-            logging.error(f"can't unzip the file {self.__zip_filename}")
+            log.error(f"can't unzip the file {self.__zip_filename}")
             raise SystemError(f"can't unzip the file {self.__zip_filename}")
 
-        logging.info(f"Unzipping finished ! ({self.path})")
+        log.info(f"Unzipping finished ! ({self.path})")
         return self.path

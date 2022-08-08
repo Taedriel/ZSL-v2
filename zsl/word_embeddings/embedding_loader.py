@@ -1,9 +1,11 @@
 import torch
-import logging
-from tqdm import tqdm
 
-from typing import Tuple, List, Dict
 from .bert_strategy import SimilarityStrategy
+from tqdm import tqdm
+from typing import Tuple, List, Dict
+
+import logging
+log = logging.getLogger(__name__)
 
 __all__ = ["EmbeddingsLoader"]
 
@@ -53,7 +55,7 @@ class SimilarityMatrix(EmbeddingsLoader):
 
         closed_list = []
 
-        logging.info("Computing cosine similarity, this could take some time...")
+        log.info("Computing cosine similarity, this could take some time...")
         for tag, vector in tqdm(self.embeddings.items(), total = len(self.embeddings), desc=f"{'computing sim matrix':30}", ncols=80):
 
             for otag, other_vector in self.embeddings.items():

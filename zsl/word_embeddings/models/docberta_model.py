@@ -1,10 +1,10 @@
 from typing import List
 
-from word_embeddings.bert_strategy import Sum4LastLayers
-from word_embeddings.model import WordToVector
+from zsl.word_embeddings.bert_strategy import Sum4LastLayers
+from zsl.word_embeddings.model import WordToVector
+from transformers import RobertaModel, RobertaTokenizer
 from .docbert_model import DocBERTModel
 
-from transformers import RobertaModel, RobertaTokenizer
 
 __all__ = ["DocBERTAModel"]
 

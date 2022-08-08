@@ -1,16 +1,17 @@
-import logging
 import torch
+
+from ..model import WordToVector
+from ..article import ArticleRetriever
+from ..embedding_loader import SimilarityMatrix
+from ..bert_strategy import CosineSim
+from zsl.embeddings_solver.simple_solver import Solver
 from tqdm import tqdm
 from time import perf_counter
 from typing import Tuple
-
 from scipy.stats import spearmanr
 
-from simple_solver.simple_solver import Solver
-from word_embeddings.model import WordToVector
-from word_embeddings.article import ArticleRetriever
-from word_embeddings.embedding_loader import SimilarityMatrix
-from word_embeddings.bert_strategy import CosineSim
+import logging
+log = logging.getLogger(__name__)
 
 __all__ = ["EmbeddingDistanceTest", "SyntacticTest", "SimilarityTest"]
 
@@ -39,14 +40,14 @@ class Test:
 
     def __call__(self, model, articlesRetriever):
 
-        logging.info(f"Start test {self.name}")
+        log.info(f"Start test {self.name}")
 
         tic = perf_counter()
         self._start(model, articlesRetriever)
         result = self._end(model)
         toc = perf_counter()
 
-        logging.info(f"End test {self.name}")
+        log.info(f"End test {self.name}")
 
         return result, toc - tic
 

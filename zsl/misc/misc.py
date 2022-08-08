@@ -1,4 +1,6 @@
 import logging
+log = logging.getLogger(__name__)
+
 from typing import List, Dict, Callable
 
 __all__ = ["dict2csv", "sim2dist", "print_mat"]
@@ -14,7 +16,7 @@ def dict2csv(filename : str, embeddings : Dict[str, List[float]]) -> None:
         embeddings (Dict[str, List[float]]): a dictionnary of embeddings
 
     """
-    logging.info(f"writing dict to {filename} file")
+    log.info(f"writing dict to {filename} file")
     try:
         f = open(filename, "w")
     except OSError:
@@ -25,7 +27,7 @@ def dict2csv(filename : str, embeddings : Dict[str, List[float]]) -> None:
         print("embeddings", *[str(i) for i in range(dimension_number)], sep=",", file=f)
         for tag, embedding in embeddings.items():
             print(tag, *list(map(lambda x: str(float(x)), embedding)), sep=",", file=f)
-    logging.info("done")
+    log.info("done")
 
 
 def sim2dist(mat : List[List[float]], func : Callable[[float], float] \
@@ -40,7 +42,7 @@ def sim2dist(mat : List[List[float]], func : Callable[[float], float] \
         hollow (bool) : whether to consider the diagonal of the matrix or not
     
     """
-    logging.info(f"converting similarity matrix to distance matrix")
+    log.info(f"converting similarity matrix to distance matrix")
     inv_data = [[0 for i in range(len(mat[0]))] for j in range(len(mat))]
 
     for i, elem in enumerate(mat):
@@ -50,7 +52,7 @@ def sim2dist(mat : List[List[float]], func : Callable[[float], float] \
             else:
                 inv_data[i][j] = func(case)
                 
-    logging.info("done")
+    log.info("done")
     return inv_data
 
 def print_mat(mat : List[List[float]], format_function : Callable[[float], str]=lambda x: x) -> None:

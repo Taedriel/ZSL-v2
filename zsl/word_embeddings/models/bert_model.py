@@ -1,14 +1,14 @@
-
 import torch
-import logging
+
+from zsl.word_embeddings.bert_strategy import Sum4LastLayers
+from zsl.word_embeddings.article import ArticleRetriever
+from zsl.word_embeddings.model import WordToVector
 from tqdm import tqdm
-
 from typing import List
-from word_embeddings.bert_strategy import Sum4LastLayers
-from word_embeddings.article import ArticleRetriever
-from word_embeddings.model import WordToVector
-
 from transformers import BertTokenizer, BertModel
+
+import logging
+log = logging.getLogger(__name__)
 
 __all__ = ["BERTModel"]
 
@@ -46,7 +46,7 @@ class BERTModel(WordToVector):
         if len(self.list_tags) == 0:
             raise Exception("no tags yet !")
 
-        logging.info("Starting converting tokens...")
+        log.info("Starting converting tokens...")
         nb_token = len(self.list_tags)
         for i, tag in tqdm(enumerate(self.list_tags), total = nb_token, desc=f"{'converting to embedding':30}", ncols=80):
             

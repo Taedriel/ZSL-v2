@@ -1,8 +1,8 @@
+import torch
+import numpy as np
+
 from typing import List
 from scipy.spatial.distance import cityblock
-
-import numpy as np
-import torch
 
 __all__ = ["BERTMergeStrategy", "Sum4LastLayers", "Concat4LastLayer", "SimilarityStrategy", "CosineSim", "EuclidianDistSim", "ManhattanDistSim"]
 

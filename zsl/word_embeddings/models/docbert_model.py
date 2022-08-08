@@ -1,15 +1,15 @@
-
 import torch
-import logging
+
+from .bert_model import BERTModel
+from zsl.word_embeddings.bert_strategy import Sum4LastLayers
+from zsl.word_embeddings.model import WordToVector
 from tqdm import tqdm
 from typing import List
 from math import ceil
-
-from .bert_model import BERTModel
-from word_embeddings.bert_strategy import Sum4LastLayers
-from word_embeddings.model import WordToVector
-
 from transformers import BertTokenizer, BertModel
+
+import logging
+log = logging.getLogger(__name__)
 
 
 __all__ = ["DocBERTModel"]
@@ -50,7 +50,7 @@ class DocBERTModel(BERTModel):
         if len(self.list_tags) == 0:
             raise Exception("no tags yet !")
 
-        logging.info("Starting converting tokens...")
+        log.info("Starting converting tokens...")
         nb_token = len(self.list_tags)
         for i, tag in tqdm(enumerate(self.list_tags), total = nb_token, desc=f"{'converting to embedding':30}", ncols=80):
             
@@ -59,7 +59,7 @@ class DocBERTModel(BERTModel):
             article = article_ret.get_article(tag)
 
             if article.summary is None:
-                logging.warning(f"no article for {tag}")
+                log.warning(f"no article for {tag}")
                 self.embeddings[tag] = self._one_pass(self.tokenizer(tag, return_tensors = "pt"))
                 continue
 
@@ -73,7 +73,7 @@ class DocBERTModel(BERTModel):
                 continue
 
             nb_pass = ceil(nb_token / self.max_size)
-            logging.info(f"{tag} is {nb_pass} pass")
+            log.info(f"{tag} is {nb_pass} pass")
 
             stop = 50
             for j in range(nb_pass):

@@ -1,5 +1,9 @@
-from .test import *
 import gluonnlp as nlp
+
+from .test import *
+
+import logging
+log = logging.getLogger(__name__)
 
 cifar100 = ["apple", "aquarium_fish", "baby", "bear", "beaver", "bed", "bee", "beetle", "bicycle", "bottle", "bowl", "boy", "bridge", "bus", "butterfly", "camel", "can", \
             "castle", "caterpillar", "cattle", "chair", "chimpanzee", "clock", "cloud", "cockroach", "computer_keyboard", "couch", "crab", "crocodile", "cup", \
@@ -24,9 +28,10 @@ class TestPipeline():
         self.articleRetriver = articleRetriever
 
         if list_test == None:
+            log.info(f"no test provided, fallback on all tests available")
             self.list_test = TestPipeline.list_test
         else:
-            self.list_test = list_test 
+            self.list_test = list_test
 
     def execute(self):
 

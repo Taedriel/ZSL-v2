@@ -1,11 +1,13 @@
 import torch
 import json
 
-from typing import List
 from .article import ArticleRetriever
 from .embedding_loader import EmbeddingsLoader
 from .dowloader import Downloader
-from misc import dict2csv
+from typing import List
+from zsl.misc import dict2csv
+
+__all__ = ["WordToVector", "FixedEmbedding"]
 
 class WordToVector:
 

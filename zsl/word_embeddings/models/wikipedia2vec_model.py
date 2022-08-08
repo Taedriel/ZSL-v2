@@ -1,10 +1,12 @@
-import logging
 import torch
 
 from typing import List
-from word_embeddings.model import WordToVector, FixedEmbedding
-
 from wikipedia2vec import Wikipedia2Vec
+from ..model import WordToVector, FixedEmbedding
+
+
+import logging
+log = logging.getLogger(__name__)
 
 __all__ = ["Wiki2VecModel"]
 
@@ -58,7 +60,7 @@ class Wiki2VecModel(FixedEmbedding):
                 embed = self._retrieve(w)
 
             if embed is None:
-                logging.warning(f"{w} cannot be retrieved.")
+                log.warning(f"{w} cannot be retrieved.")
                 unk.append(word)
             else:
                 self.embeddings[w] = torch.from_numpy(embed)

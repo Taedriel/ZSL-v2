@@ -1,9 +1,8 @@
-import logging
 import torch
 import numpy as np
 
 from typing import List
-from word_embeddings.model import WordToVector, FixedEmbedding
+from zsl.word_embeddings.model import WordToVector, FixedEmbedding
 
 __all__ = ["GloVEModel"]
 

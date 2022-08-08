@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 
+import zsl.word_embeddings.dowloader as d
+import zsl.word_embeddings.model as m
 from wikipedia2vec import Wikipedia2Vec
-from word_embeddings import Downloader
-from word_embeddings import EmbeddingsLoader
 
 __all__ = ["Solver", "OutOfVocabSolver"]
 
-class Solver(EmbeddingsLoader):
+class Solver(m.EmbeddingsLoader):
 
     DEFAULT_MIN_LIST_RESULT = 10
 
@@ -51,7 +51,7 @@ class Solver(EmbeddingsLoader):
         target_embeddings = self.embeddings[target]
         return float(np.square(np.subtract(embedding, target_embeddings)).mean())
 
-class OutOfVocabSolver(Downloader):
+class OutOfVocabSolver(d.Downloader):
 
     DEFAULT_MIN_LIST_RESULT = 10
 
