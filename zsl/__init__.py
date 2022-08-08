@@ -1,9 +1,12 @@
-from fsl_classification import *
+from .misc import *
+from .word_embeddings import *
+from .embeddings_solver import *
+from .fsl_classification import *
 
 import logging
 
 FORMAT = '%(levelname)-10s %(message)s'
-logging.basicConfig(format=FORMAT, level = logging.INFO, filename = "ZSL.log" )
+logging.basicConfig(format=FORMAT, level = logging.INFO, filename = __name__ + ".log" )
 
 
 NAME = 'ZSL-v2'
@@ -13,15 +16,13 @@ VERSION = __version__
 
 DESCRIPTION = ""
 
-AUTHOR = ""
-AUTHOR_EMAIL = ""
+AUTHOR = "Prof. Jean-Christophe Nebel"
+AUTHOR_EMAIL = "J.Nebel@kingston.ac.uk"
 URL = ""
 PROJECT_URLS = {
     'Documentation': "",
-    'Source Code': "",
-    'Issue Tracker': "",
-    'Donate': ""
+    'Source Code': "https://github.com/Taedriel/ZSL-v2",
 }
 LICENSE = ""
 
-KEYWORDS = []
+KEYWORDS = ["image-recognition", "zero shot learning", "few shot learning"]
