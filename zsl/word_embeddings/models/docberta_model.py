@@ -9,6 +9,10 @@ from .docbert_model import DocBERTModel
 __all__ = ["DocBERTAModel"]
 
 class DocBERTAModel(DocBERTModel):
+    """ use a DocBERT Model to convert classes into their embeddings. 
+    
+    DocBERT is a model that will perform multiple overlapping BERT passes on the text, and take the average of each pass.
+    """
 
     def __init__(self, list_tag : List[str], big : bool = False):
         WordToVector.__init__(self, list_tag)

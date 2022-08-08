@@ -16,6 +16,8 @@ cifar100 = ["apple", "aquarium_fish", "baby", "bear", "beaver", "bed", "bee", "b
 __all__ = ["TestPipeline"]
 
 class TestPipeline():
+    """Perform a series of tests on a given model
+    """
 
     list_test = [ SimilarityTest(nlp.data.WordSim353('all'), "Wordsim353"), 
                   SimilarityTest(nlp.data.SimLex999('all') , "SimLex999") ,
@@ -24,6 +26,15 @@ class TestPipeline():
                 ]
 
     def __init__(self, model, articleRetriever, list_test = None):
+        """Set the model to use on this pipeline, as well as the list of test to perform
+
+        If no tests are present, fallback will be on 4 pre programmed test.
+
+        Args:
+            model (WordToVector): the model to use 
+            articleRetriever (ArticleRetriever): the ArticleRetriever to use with the model
+            list_test (List[Test], optional): the list of test. Defaults to None.
+        """
         self.model = model
         self.articleRetriver = articleRetriever
 
@@ -33,8 +44,9 @@ class TestPipeline():
         else:
             self.list_test = list_test
 
-    def execute(self):
-
+    def execute(self) -> None:
+        """launch all the programmed tests on the model
+        """
         for i, test in enumerate(self.list_test):
 
             print(f"Test {i} : {test.name}".center(80, "="))

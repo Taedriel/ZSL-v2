@@ -13,7 +13,8 @@ log = logging.getLogger(__name__)
 __all__ = ["BERTModel"]
 
 class BERTModel(WordToVector):
-
+    """ use a BERT Model to convert classes into their embeddings
+    """
     def __init__(self, list_tag : List[str], big: bool = False, window : int = 100):
         super(BERTModel, self).__init__(list_tag)
         self.window_size = window
@@ -27,7 +28,7 @@ class BERTModel(WordToVector):
 
         self.model.eval()
 
-    def _one_pass(self, inputs):
+    def __one_pass(self, inputs):
         with torch.no_grad():
             outputs = self.model(input_ids = inputs["input_ids"], attention_mask = inputs["attention_mask"])
 
@@ -54,7 +55,7 @@ class BERTModel(WordToVector):
 
             article = article_ret.get_article(tag)
             if article.summary is None or self.window_size == 0:
-                self.embeddings[tag] = self._one_pass(self.tokenizer(tag, return_tensors = "pt"))
+                self.embeddings[tag] = self.__one_pass(self.tokenizer(tag, return_tensors = "pt"))
                 continue
 
             sub_ids = self.tokenizer.encode(tag + ". " + article.summary)[0:self.window_size]
@@ -62,4 +63,4 @@ class BERTModel(WordToVector):
                             "token_type_ids": torch.IntTensor([0 for k in range(len(sub_ids))]).unsqueeze(0), \
                             "attention_mask": torch.IntTensor([1 for k in range(len(sub_ids))]).unsqueeze(0)  }
 
-            self.embeddings[tag] = self._one_pass(subinputs)
+            self.embeddings[tag] = self.__one_pass(subinputs)

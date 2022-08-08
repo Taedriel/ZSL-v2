@@ -12,6 +12,8 @@ __all__ = ["Wiki2VecModel"]
 
 
 class Wiki2VecModel(FixedEmbedding):
+    """use a Wiki2Vec Model to convert classes into their embeddings
+    """
 
     address = "http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/"
     

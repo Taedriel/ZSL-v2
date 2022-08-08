@@ -7,6 +7,8 @@ from zsl.word_embeddings.model import WordToVector, FixedEmbedding
 __all__ = ["GloVEModel"]
 
 class GloVEModel(FixedEmbedding):
+    """ use a GloVe Model to convert classes into their embeddings
+    """
     
     address = "https://nlp.stanford.edu/data/"
     all_dict = "glove_all"
@@ -21,7 +23,7 @@ class GloVEModel(FixedEmbedding):
         filename = "glove.6B.zip"
         FixedEmbedding.__init__(self, GloVEModel.address, filename)
 
-    def _in_list(self, word, list_tag, list_joined_tag):
+    def __in_list(self, word, list_tag, list_joined_tag):
         if word in list_tag:
             return word
         
@@ -40,7 +42,7 @@ class GloVEModel(FixedEmbedding):
 
         return False
 
-    def _one_turn(self, resolve_dict = {}):
+    def __one_turn(self, resolve_dict = {}):
         uncaped_list_tag = [x.replace("_", " ") for x in self.list_tags]
         unk = [item if item not in resolve_dict.keys() else resolve_dict[item] for item in uncaped_list_tag]
         joined_unk = [(i, "".join(item)) for i, item in enumerate(unk) if len(item.split()) > 1]
@@ -50,7 +52,7 @@ class GloVEModel(FixedEmbedding):
                 tag, coefs = line.split(maxsplit=1)
                 coefs = np.fromstring(coefs, "f", sep=" ")
 
-                r_tag = self._in_list(tag, unk, joined_unk)
+                r_tag = self.__in_list(tag, unk, joined_unk)
                 if r_tag is not False:
                     self.embeddings[r_tag] = torch.from_numpy(coefs)
                     unk.remove(r_tag)

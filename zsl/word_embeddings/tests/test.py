@@ -16,12 +16,23 @@ log = logging.getLogger(__name__)
 __all__ = ["EmbeddingDistanceTest", "SyntacticTest", "SimilarityTest"]
 
 class Test:
+    """base class for all test.
+
+    the Start method is called at the beginning of the test, and allow to generate embeddings
+    the end method is called at the end of the test, in order to process the generated embeddings 
+    """
 
     def __init__(self, name):
         self.name = name
         self.vocab = []
     
-    def _start(self, model : WordToVector, articlesRetriever : ArticleRetriever):
+    def __start(self, model : WordToVector, articlesRetriever : ArticleRetriever):
+        """generate the embeddings
+
+        Args:
+            model (WordToVector): the model to use 
+            articlesRetriever (ArticleRetriever): the articleRetriever to use with the model
+        """
         articlesRetriever.set_list_vocab(f"{self.name}.art", self.vocab)
 
         if articlesRetriever(force_reload = False):
@@ -35,16 +46,30 @@ class Test:
             model.export(self.save_file)
 
 
-    def _end(self):
+    def __end(self):
+        """evaluate the embedding
+
+        Raises:
+            NotImplementedError: if the evaluation is not implemented
+        """
         raise NotImplementedError
 
     def __call__(self, model, articlesRetriever):
+        """perform the test on the model
+
+        Args:
+            model (WordToVector): the model to use for the test
+            articlesRetriever (ArticleRetriever): the articleRetriver to use with the model
+
+        Returns:
+            Tuple[any, float]: return a tuple containing the result of the test and the time taken
+        """
 
         log.info(f"Start test {self.name}")
 
         tic = perf_counter()
-        self._start(model, articlesRetriever)
-        result = self._end(model)
+        self.__start(model, articlesRetriever)
+        result = self.__end(model)
         toc = perf_counter()
 
         log.info(f"End test {self.name}")
@@ -59,7 +84,7 @@ class EmbeddingDistanceTest(Test):
         self.thresold = thresold
         self.vocab = vocab
 
-    def _end(self, model):
+    def __end(self, model):
         
         sim_matrix = SimilarityMatrix(self.save_file, CosineSim())
         ids, cosine_mat = sim_matrix.get_sim_matrix()
@@ -92,7 +117,7 @@ class SyntacticTest(Test):
                 if item not in self.vocab:
                     self.vocab.append(item)
 
-    def _end(self, model):
+    def __end(self, model):
 
         solver = Solver(self.save_file)
         top1, top3, top5, top10 = 0, 0, 0, 0
@@ -135,7 +160,7 @@ class SimilarityTest(Test):
             if w2 not in self.vocab:
                 self.vocab.append(w2)
     
-    def _end(self, model):
+    def __end(self, model):
         sim_list = []
         i_list = []
 

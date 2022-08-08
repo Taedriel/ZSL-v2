@@ -9,6 +9,8 @@ __all__ = ["ROBERTAModel"]
 
 
 class ROBERTAModel(BERTModel):
+    """ use a ROBERTA Model, a bigger version of BERT to convert classes into their embeddings
+    """
 
     def __init__(self, list_tag : List[str], big: bool = False, window : int = 100):
         WordToVector.__init__(self, list_tag)

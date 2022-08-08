@@ -15,6 +15,10 @@ log = logging.getLogger(__name__)
 __all__ = ["DocBERTModel"]
 
 class DocBERTModel(BERTModel):
+    """ use a DocBERTA Model to convert classes into their embeddings. 
+    
+    DocBERTA is a model that will perform multiple overlapping ROBERTA passes on the text, and take the average of each pass.
+    """
 
     def __init__(self, list_tag : List[str], big : bool = False):
         WordToVector.__init__(self, list_tag)
@@ -30,7 +34,7 @@ class DocBERTModel(BERTModel):
 
         self.model.eval()
 
-    def _one_pass(self, subinputs):
+    def __one_pass(self, subinputs):
         with torch.no_grad():
             outputs = self.model(input_ids = subinputs["input_ids"], attention_mask = subinputs["attention_mask"])
 
@@ -60,7 +64,7 @@ class DocBERTModel(BERTModel):
 
             if article.summary is None:
                 log.warning(f"no article for {tag}")
-                self.embeddings[tag] = self._one_pass(self.tokenizer(tag, return_tensors = "pt"))
+                self.embeddings[tag] = self.__one_pass(self.tokenizer(tag, return_tensors = "pt"))
                 continue
 
             torch_cls = []
@@ -69,7 +73,7 @@ class DocBERTModel(BERTModel):
             nb_token = len(ids)
 
             if nb_token < self.max_size:
-                self.embeddings[tag] = self._one_pass(self.tokenizer(tag, return_tensors = "pt"))
+                self.embeddings[tag] = self.__one_pass(self.tokenizer(tag, return_tensors = "pt"))
                 continue
 
             nb_pass = ceil(nb_token / self.max_size)
@@ -85,7 +89,7 @@ class DocBERTModel(BERTModel):
                 subinputs = { "input_ids": torch.IntTensor(sub_ids).unsqueeze(0), \
                             "token_type_ids": torch.IntTensor([0 for k in range(len(sub_ids))]).unsqueeze(0), \
                             "attention_mask": torch.IntTensor([1 for k in range(len(sub_ids))]).unsqueeze(0)  }
-                torch_cls.append(self._one_pass(subinputs))
+                torch_cls.append(self.__one_pass(subinputs))
                 if stop == nb_token: break
 
             self.embeddings[tag] = torch.mean(torch.stack(tuple(t for t in torch_cls)), axis=0)

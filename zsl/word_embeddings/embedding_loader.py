@@ -18,13 +18,20 @@ class EmbeddingsLoader:
      """
 
     def __init__(self, filename : str):
+        """load an embedding file. 
+
+        the file need to have a one line header. It is recommended that it have at least one columns named "embeddings" as this columns is used everywhere to identify embeddings
+
+        Args:
+            filename (str): a path to the .CSV file containing embeddings 
+        """
 
         self.file = filename
         self.embeddings = {}
 
-        self._load_file()
+        self.__load_file()
 
-    def _load_file(self) -> None:
+    def __load_file(self) -> None:
         try:
             with open(self.file, "r") as f:
                 lines = f.readlines()
@@ -37,14 +44,17 @@ class EmbeddingsLoader:
             raise IOError(f"No file {self.file}")
 
 class SimilarityMatrix(EmbeddingsLoader):
+    """SimilarityMatrix
+
+    """
 
     def __init__(self, embeddings : Dict[str, List[float]], strategy : SimilarityStrategy):
         EmbeddingsLoader.__init__(self, embeddings)
         self.strategy = strategy
-        self._create_matrix()
+        self.__create_matrix()
         self.computed : bool = False
 
-    def _create_matrix(self) -> None:
+    def __create_matrix(self) -> None:
         n_tokens = len(self.embeddings)
         self.cosine_sim_matrix : Dict[Dict[float]] = {}
         for tag in self.embeddings.keys():

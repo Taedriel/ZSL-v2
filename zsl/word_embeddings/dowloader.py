@@ -7,8 +7,18 @@ log = logging.getLogger(__name__)
 __all__ = ["Downloader"]
 
 class Downloader:
+    """Pre download compressed file, usually pre trained embedding and extract them in order to use them
+
+    If the file is already present, it will not download anything
+    """
 
     def __init__(self, base_addr : str, file_zipname : str):
+        """download the file at the given address on internet. the full address is obtained by concatenating the address and the filename 
+
+        Args:
+            base_addr (str): the internet address of the server hosting the file
+            file_zipname (str): the compressd name of the file. uncompressed name while be the same but without the extension
+        """
         self.__address = base_addr
         self.__zip_filename = file_zipname
         self.__unzip_filename = "".join(file_zipname.split(".")[:-1])
