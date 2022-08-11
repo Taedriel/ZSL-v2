@@ -3,7 +3,10 @@ from os import listdir
 from random import randint
 
 from .utils import natural_keys
-from .utils_dataset import getImageTensor
+from .utils_dataset import get_image_tensor
+
+from torch import Tensor
+from typing import List, Tuple
  
 
 # each set is as follows, with I an image and c its label (a number) : 
@@ -20,7 +23,7 @@ from .utils_dataset import getImageTensor
 ]
 """
 
-def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type):
+def getFolderTensorsForTraining(path : str, supportNumber : int, queryNumber : int, label : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
 
   images = listdir(path)
   images.sort(key=natural_keys)
@@ -29,7 +32,7 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, convers
   for i in range(0, supportNumber):
     ridx = randint(0, len(images)-1)
     try:
-      support_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
+      support_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
       print("support image could not be loaded")
 
@@ -38,7 +41,7 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, convers
   for i in range(0, queryNumber):
     ridx = randint(0, len(images)-1)
     try:
-      query_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
+      query_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
       print("query image could not be loaded")
 
@@ -55,7 +58,7 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, convers
 
 @return the support and query set
 """
-def getSets(paths, supportNumber, queryNumber, conversion_type):
+def getSets(paths : List[str], supportNumber : int, queryNumber : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
 
   supportSet, querySet = [], []
   for label, path in enumerate(paths):

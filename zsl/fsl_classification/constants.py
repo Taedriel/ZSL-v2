@@ -1,5 +1,8 @@
 import os
 
+from torch import Tensor
+from typing import List, Tuple
+
 # must finish by a /
 HEAD = os.getcwd()+"/zsl/fsl_classification/"
 

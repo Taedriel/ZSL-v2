@@ -18,7 +18,7 @@ from .constants import *
 
 @return the string representing the mean and uncertainty of the experiments
 """
-def getUa(mesurements, k=1):
+def getUa(mesurements : List[float], k=1) -> Tuple[str, float, float]:
 
   title = mesurements[0]
   l = mesurements[1:]
@@ -32,7 +32,7 @@ def getUa(mesurements, k=1):
   return title+str(m_) + "% +- " + str(u) + " (with 95% confidence)" if k!=1 else "", m_, u
 
 
-def getUaList(listOfExperiences, k=1):
+def getUaList(listOfExperiences : List[List[float]], k=1):
 
   for mesurements in listOfExperiences:
     string, m_, u = getUa(mesurements, k)
@@ -46,7 +46,7 @@ def getUaList(listOfExperiences, k=1):
 
 @return the set without label
 """
-def getOnlyImages(set_):
+def getOnlyImages(set_ : Tensor) -> Tensor:
   
   justSet = []
   for class_ in set_:
@@ -56,20 +56,20 @@ def getOnlyImages(set_):
   return torch.stack(justSet)
 
 
-def plot_images(images, title, images_per_row):
+def plot_images(images : Tensor, title : str, images_per_row : int):
   plt.figure()
   plt.title(title)
   plt.imshow(utils.make_grid(images, nrow=images_per_row).permute(1, 2, 0))
 
 
-def saveFile(filename, data):
+def saveFile(filename : str, data : List[any]):
   file = open(PATH_MODEL+filename, "w+")
   for d in data:
     file.write(str(d)+"\n")
   file.close()
 
 
-def showRegression(rangeOfData, data, degree):
+def showRegression(rangeOfData : range, data : List[float], degree : int):
   coef = np.polyfit(rangeOfData, data, degree)
   poly1d_fn = np.poly1d(coef) 
   plt.plot(rangeOfData, data, '-yo', rangeOfData, poly1d_fn(rangeOfData), '--k')
@@ -80,7 +80,7 @@ def showRegression(rangeOfData, data, degree):
   print("\n")
 
 
-def showData(data, title, degree, saveInfo=[False, ""]):
+def showData(data : List[float], title : str, degree : int, saveInfo=[False, ""]):
 
   path = saveInfo[1]
   if saveInfo[0]:
@@ -103,7 +103,7 @@ the model test.
 
 @return accuracy, confusion matrix and other details (see scipy)
 """
-def getMatrixReport(labels, predicted_labels):
+def getMatrixReport(labels : int, predicted_labels : List[int]) -> Tuple[any, float, any]:
     print("\n")
     listOfClasses = list(dict.fromkeys(labels))
     res = classification_report(labels, predicted_labels, target_names=["c"+str(i) for i in range(1, len(listOfClasses)+1)],  output_dict=True)
@@ -118,7 +118,7 @@ def getMatrixReport(labels, predicted_labels):
 
 @return the number of number in the specified range
 """
-def numberInInterval(interval, range_):
+def numberInInterval(interval : List[float], range_ : List[int]):
   in_ = 0
   minX = range_[0]
   maxX = range_[1]
@@ -132,7 +132,7 @@ def numberInInterval(interval, range_):
   return in_
 
 
-def getDistributionOnPred(correctPredictions, bins):
+def getDistributionOnPred(correctPredictions : List[float], bins : int):
   NumberDist = []
   for elem in bins:
     NumberDist.append(100*numberInInterval(correctPredictions, elem)/len(correctPredictions))
@@ -140,7 +140,7 @@ def getDistributionOnPred(correctPredictions, bins):
   return NumberDist
 
 
-def createHistogramPreds(predictions, title):
+def createHistogramPreds(predictions : List[float], title : str) -> List[float]:
 
   bins = [(i*0.1, (i+1)*0.1) for i in range(0, 10)]
   NumberDist = getDistributionOnPred(predictions, bins)
@@ -165,7 +165,7 @@ def createHistogramPreds(predictions, title):
 
 @return two new distributions
 """
-def getSimilarityDistributions(dist, threshold):
+def getSimilarityDistributions(dist : List[float], threshold : float):
   dist1 = []
   dist2 = []
 
@@ -186,13 +186,13 @@ def getSimilarityDistributions(dist, threshold):
 
 @return the r parameter of an image
 """
-def getR(dist1, dist2):
+def getR(dist1 : List[float], dist2 : List[float]) -> float:
 
   L1, L2 = len(dist1), len(dist2)
   return L2/L1 if L1 != 0 else -1
 
 
-def printDistributions(dist, threshold):
+def printDistributions(dist : List[float], threshold : float):
 
   dist1, dist2 = getSimilarityDistributions(dist, threshold)
   L1, L2 = len(dist1), len(dist2)
@@ -214,7 +214,7 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def getMin(supportClasses):
+def getMin(supportClasses : List[str]) -> int:
   """
   because classes after cleaning do not necesserily have the same number of elements,
   thus there's the need to avoid getting an out of range error
@@ -232,7 +232,7 @@ def printSimMatrix(M):
 
 
 """
-@deprecated (do not use file anymore)
+@deprecated (we don't use file anymore)
 
 @desc get set of all classes to be used for cleaning from a text file
 

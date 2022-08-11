@@ -1,6 +1,9 @@
 from torch import optim
 from torch import save, load
 
+from torch import Tensor
+from typing import List, Tuple
+
 class ModelUtils:
 
   def __init__(self):
@@ -10,7 +13,9 @@ class ModelUtils:
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     return optimizer
   
-  def getImages(self, image1, image2):
+  """
+  @desc takes in image tensor and encapsulate them in one more dimension because models want (4, 0) tensor"""
+  def getImages(self, image1 : Tensor, image2 : Tensor) -> Tuple[Tensor, Tensor]:
 
     if image1.dim() < 4:
       image1 = image1.unsqueeze(0)
@@ -30,7 +35,7 @@ class ModelUtils:
 
 
   #TODO CAN CHANGE THE RELOADING MODEL HERE
-  def getModelName(self, context, cuda_):
+  def getModelName(self, context : str, cuda_ : bool):
 
     valid_context = ["train", "clean"]
     if context in valid_context:
@@ -39,10 +44,10 @@ class ModelUtils:
 
 class ModelSaver:
 
-  def __init__(self, path):
+  def __init__(self, path : str):
     self.PATH_MODEL = path
 
-  def saveModel(self, name, model_opti, epoch, loss_value):
+  def saveModel(self, name : str, model_opti, epoch, loss_value):
 
     model, optimizer = model_opti[0], model_opti[1]
 

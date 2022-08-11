@@ -10,7 +10,7 @@ import time
 
 from .constants import *
 
-def getParser(classeName):
+def getParser(classeName : str) -> BeautifulSoup:
 
   site = 'https://www.google.com/search?tbm=isch&q='+classeName
 
@@ -46,7 +46,7 @@ def getParser(classeName):
 
 @return the number of downloaded images
 """
-def getClassImages(path, classeName):
+def getClassImages(path : str, classeName : List[str]) -> int:
   
   imagesNumber = 0
   soup = getParser(classeName)
@@ -63,7 +63,7 @@ def getClassImages(path, classeName):
   return imagesNumber
 
 
-def getImagesGoogle(classes):
+def getImagesGoogle(classes : List[str]) -> int:
 
   imagesNumber = 0
   print("downloading images...\n")
@@ -79,7 +79,7 @@ def getImagesGoogle(classes):
   return imagesNumber
 
 
-def getClassesImagesURLLIB(classes, download=True):
+def getClassesImagesURLLIB(classes : List[str], download=True):
 
   imagesNumber = 0
 

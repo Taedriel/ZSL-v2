@@ -1,6 +1,6 @@
 import sys
 
-from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_metainfo, downloadGoogleImages, train_model
+from zsl.fsl_classification.sub_pipeline import getImageNetNegativeImages, cleanImages, evaluate, get_metainfo, downloadGoogleImages, train_model
 sys.path.append("./zsl")
 
 from typing import List
@@ -31,11 +31,21 @@ def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
 
     return embedding
 
+
+"""
+@desc predict the label of the unknown image
+
+@param image_path the path to the query
+@param plausible_classes the list of hypohtetical classes the image could be
+
+@return the label of the image
+"""
 def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> List[str]:
 
+    getImageNetNegativeImages(6, 10)
     downloadGoogleImages(plausible_classes, reset=False)
     PATH_DATA, conversion_type, _ = get_metainfo(CUB=False, IMAGES=True, OMNIGLOT=False)
-    cleanImages(PATH_DATA, plausible_classes, conversion_type)
+    cleanImages(PATH_DATA, plausible_classes, conversion_type) # beware that it will clean omniglot or cub if true
     supportSet = train_model(PATH_DATA, plausible_classes, conversion_type)
     predicted_class = evaluate(zsl.fsl_classification.HEAD+"pipeline/unknown image/", supportSet, plausible_classes, conversion_type)
 

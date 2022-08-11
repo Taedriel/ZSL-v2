@@ -2,10 +2,12 @@ from torchvision import transforms
 import PIL.Image
 from random import randint
 
-def getNrandomClassesPaths(path, listClasses, n_way):
+from torch import Tensor
+from typing import List
 
-  if n_way == len(listClasses):
-    return listClasses
+imageResize = (224, 224)
+
+def getNrandomClassesPaths(path : str, listClasses : List[str], n_way : int) -> List[str]:
 
   paths = []
   for i in range(0, n_way):
@@ -15,10 +17,7 @@ def getNrandomClassesPaths(path, listClasses, n_way):
 
   return paths
 
-imageResize = (224, 224)
-
-
-def getImageTensor(path, conversion_type):
+def get_image_tensor(path : str, conversion_type : str) -> Tensor:
 
   valid_conversion = ["CUB", "IMG"]
   convert = None

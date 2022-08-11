@@ -1,3 +1,5 @@
+from zsl.fsl_classification.classes_for_dataset import MetaSet
+from zsl.fsl_classification.siamese_network import Siamese
 from .constants import *
 from .utils_sn import *
 from .utils import plot_images, getSimilarityDistributions, getR, printSimMatrix
@@ -10,7 +12,7 @@ from tqdm import tqdm
 import itertools
 
 
-def getIndexes(setOfImages, nbClasses, cleaning=False):
+def getIndexes(setOfImages : Tensor, nbClasses : int, cleaning=False) -> Tuple[int, int, int, int]:
 
   nbEx =  len(setOfImages) if cleaning else len(setOfImages[0])
   ci1, e1 = randint(0, nbClasses-1), randint(0, nbEx-1) 
@@ -23,7 +25,7 @@ def getIndexes(setOfImages, nbClasses, cleaning=False):
 the cleaning parameter is here because cleaning data and training data have
 different shapes
 """
-def getRandomPair(setOfImages, cleaning=False):
+def getRandomPair(setOfImages : Tensor, cleaning=False) -> Tuple[Tensor, Tensor, int]:
 
   nbClasses = len(setOfImages)
   ci1, ci2, e1, e2 = getIndexes(setOfImages, nbClasses, cleaning)
@@ -45,7 +47,7 @@ def getRandomPair(setOfImages, cleaning=False):
 """
 class Trainer(ModelUtils):
 
-    def __init__(self, path_model, model, cuda_, cleaning):
+    def __init__(self, path_model : str, model : Siamese, cuda_ : bool, cleaning : bool):
 
         super().__init__()
         self.cuda_ = cuda_
@@ -68,7 +70,7 @@ class Trainer(ModelUtils):
             self.optimizer = super().getOptimizer(self.model.metric)
 
 
-    def epoch(self, suppSet):
+    def epoch(self, suppSet : Tensor) -> List[float]:
 
         lossForBatch = []
         for i in range(0, batchSize):
@@ -97,7 +99,7 @@ class Trainer(ModelUtils):
 
     @return losses a list of the mean loss per epoch
     """
-    def training(self, supportSet, epoch_loss=(0, 0), set_i=0):
+    def training(self, supportSet : Tensor, epoch_loss=(0, 0), set_i=0) -> List[int]:
 
         numberOfEpochs = 300-epoch_loss[0]
         valFreq = 10
@@ -137,7 +139,7 @@ class Tester(ModelUtils):
 
     @return the label of the most represented class
     """
-    def getFirstClassBasedOnRepresentation(self, predictions):
+    def getFirstClassBasedOnRepresentation(self, predictions : List[Tuple[Tensor, int]]) -> int:
 
         representation = [0]*N_WAY
         for pred in predictions:
@@ -146,7 +148,7 @@ class Tester(ModelUtils):
         return representation.index(max(representation))
 
 
-    def isModelCorrect(self, predictions, queryClass):
+    def isModelCorrect(self, predictions : List[Tuple[Tensor, int]], queryClass : int) -> Tuple[int, int, float]:
 
         pred_sorted = sorted(predictions, key=lambda tup: tup[-1], reverse=True)
         first_five = pred_sorted[0:5]
@@ -158,7 +160,7 @@ class Tester(ModelUtils):
         return similarity, predictedClassLabel, predictionScore
 
 
-    def model_prediction(self, queryInfo, imageInfo, triplets):
+    def model_prediction(self, queryInfo : Tuple[Tensor, int], imageInfo : Tuple[Tensor, int], triplets : List[Tuple[Tensor, int]]) -> Tuple[List[Tuple[Tensor, int]], int, int, float]:
 
         image, imageClass = imageInfo
         query, queryClass = queryInfo
@@ -173,7 +175,7 @@ class Tester(ModelUtils):
         return triplets, areReallySimilar, imageClass, prediction
 
 
-    def evaluateWithMetric(self, supportSet, querySet):
+    def evaluateWithMetric(self, supportSet : Tensor, querySet : Tensor):
 
         triplets = []
         pred_labels = []
@@ -203,7 +205,8 @@ class Tester(ModelUtils):
 
         return "\n accuracy :"+str(100.0*correct/(N_WAY*N_QUERY)), pred_labels, query_labels, correctPreds, incorrectPreds, indexIncorrectQuery
         
-    def queryEvaluation(self, supportSet, query):
+
+    def queryEvaluation(self, supportSet : Tensor, query : Tensor) -> int:
 
         triplets = []
         self.model.eval()
@@ -230,7 +233,7 @@ class Tester(ModelUtils):
 """
 class Cleaner(ModelUtils):
 
-    def __init__(self, path_model, model, meta_set, cuda_):
+    def __init__(self, path_model : str, model : Siamese, meta_set : MetaSet, cuda_ : bool):
         super().__init__()
 
         self.meta_set = meta_set
@@ -245,7 +248,7 @@ class Cleaner(ModelUtils):
         self.cuda_ = cuda_
 
 
-    def isQueryOutsider(self, Eij):
+    def isQueryOutsider(self, Eij : Tuple[Tensor, Tensor, int]) -> float:
 
         model = self.model_t.model
         supportSet, querySet, lenght = Eij[0], Eij[1], Eij[2]-1
@@ -267,7 +270,7 @@ class Cleaner(ModelUtils):
 
 
     #TODO CAN CHANGE THE RELOADING MODEL HERE(cleaning context)
-    def getPredictionsForOneQuery(self, Eij, indexSet):
+    def getPredictionsForOneQuery(self, Eij : Tuple[Tensor, Tensor, int], indexSet : int) -> float:
 
         modelName = super().getModelName("clean", self.cuda_)
         _, model_, opti = self.model_saver.loadModel(modelName, self.model_t.model.metric, self.model_t.optimizer)
@@ -289,19 +292,19 @@ class Cleaner(ModelUtils):
 
     @return the updated list of images to remove
     """
-    def decideOnImageType(self, indices, Qij, r, imageToClean):
+    def decideOnImageType(self, indices : int, Qij : Tensor, r : float, imageToClean : List[str]) -> List[str]:
 
         tmp = imageToClean
         if 0 <= r < 1:
             self.falseVector.append(Qij)
-            tmp.append(self.meta_set.imageNameSetMatrix[indices[0]][indices[1]]) 
+            tmp.append(self.meta_set.imageName_set_matrix[indices[0]][indices[1]]) 
         else:
             self.trueVector.append(Qij)
 
         return tmp
 
 
-    def getTrueAndFalseVectors(self, index, threshold, simMatrix):
+    def getTrueAndFalseVectors(self, index : int, threshold : float, simMatrix : List[List[float]]) -> Tuple[List[str], List[float]]:
 
         rList = []
         pathToRemove = []
@@ -315,7 +318,7 @@ class Cleaner(ModelUtils):
         return pathToRemove, rList
 
 
-    def showSeparation(self, rList):
+    def showSeparation(self):
 
         if self.falseVector != []:
             falseTensor = stack(self.falseVector)
@@ -348,6 +351,6 @@ class Cleaner(ModelUtils):
 
                     print("threshold is", m-v)
                     pathToRemove, rList = self.getTrueAndFalseVectors(i, m-v, simMatrix)
-                    self.showSeparation(rList)
+                    self.showSeparation()
 
         return simMatrix
