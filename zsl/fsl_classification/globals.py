@@ -1,19 +1,19 @@
 from multiprocessing.spawn import import_main_path
 from torch import nn
-from torchvision.models import resnet50
+from torchvision.models import resnet50, ResNet50_Weights
 
 from .constants import PATH_MODEL
 from .siamese_network import *
 from .classes_for_model import Trainer
 
 cuda_ = False
-backbone = resnet50(pretrained=True)
+backbone = resnet50(weights=ResNet50_Weights.DEFAULT)
 modules=list(backbone.children())[:-1]
 
 enter = 2048
 hidden = 2000
 
-metricCleaning = nn.Sequential(nn.Linear(enter, hidden), nn.ReLU(),
+metric_cleaning = nn.Sequential(nn.Linear(enter, hidden), nn.ReLU(),
                                
                                nn.Linear(hidden, hidden), nn.ReLU(),
                                nn.Linear(hidden, hidden), nn.ReLU(),
@@ -36,11 +36,11 @@ metric = nn.Sequential(nn.Linear(enter, hidden), nn.ReLU(),
                        nn.Linear(hidden, 1))
 
 if cuda_:
-    modelCleaning = Siamese(modules, metricCleaning, cuda_).cuda()
+    model_cleaning = Siamese(modules, metric_cleaning, cuda_).cuda()
     model = Siamese(modules, metric, cuda_).cuda()
 
 else:
-    modelCleaning = Siamese(modules, metricCleaning, cuda_)
+    model_cleaning = Siamese(modules, metric_cleaning, cuda_)
     model = Siamese(modules, metric, cuda_)
 
 training_model = Trainer(PATH_MODEL, model, cuda_, False)
