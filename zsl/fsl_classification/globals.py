@@ -1,13 +1,13 @@
 from multiprocessing.spawn import import_main_path
 from torch import nn
-from torchvision.models import resnet50
+from torchvision.models import resnet50, ResNet50_Weights
 
 from .constants import PATH_MODEL
 from .siamese_network import *
 from .classes_for_model import Trainer
 
 cuda_ = False
-backbone = resnet50(pretrained=True)
+backbone = resnet50(weights=ResNet50_Weights.DEFAULT)
 modules=list(backbone.children())[:-1]
 
 enter = 2048
