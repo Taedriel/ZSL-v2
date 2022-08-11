@@ -7,13 +7,13 @@ from typing import List
 
 imageResize = (224, 224)
 
-def getNrandomClassesPaths(path : str, listClasses : List[str], n_way : int) -> List[str]:
+def get_n_random_classes_paths(path : str, list_classes : List[str], n_way : int) -> List[str]:
 
   paths = []
   for i in range(0, n_way):
-    ridx = randint(0, len(listClasses)-1)
-    paths.append(path+listClasses[ridx]+"/")
-    listClasses.remove(listClasses[ridx])
+    ridx = randint(0, len(list_classes)-1)
+    paths.append(path+list_classes[ridx]+"/")
+    list_classes.remove(list_classes[ridx])
 
   return paths
 

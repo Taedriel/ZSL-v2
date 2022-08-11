@@ -31,7 +31,7 @@ class Siamese(nn.Module):
     image = image.cuda() if self.cuda_ else image
     return flatten(self.backbone(image))
 
-  def createCombinedVector(self, I1 : Tensor, I2 : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+  def create_combined_vector(self, I1 : Tensor, I2 : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     u = self.get_vector(I1)
     v = self.get_vector(I2)
     return self.combination(u, v), u, v 

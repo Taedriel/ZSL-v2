@@ -6,14 +6,14 @@ from turtle import down
 
 from .constants import *
 from .utils import *
-from .utils_retrieval import getClassesImagesURLLIB
+from .utils_retrieval import get_classes_images_URLLIB
 from .siamese_network import *
 from .classes_for_model import *
 from .classes_for_dataset import CleaningSetProvider
 from .fsl_dataset_managment import *
 from .globals import *
 
-__all__ = ["getImageNetNegativeImages", "get_metainfo", "downloadGoogleImages", "cleanImages", "train_model", "evaluate"]
+__all__ = ["get_imageNet_negative_images", "get_metainfo", "download_google_images", "clean_images", "train_model", "evaluate"]
 
 
 
@@ -23,7 +23,7 @@ __all__ = ["getImageNetNegativeImages", "get_metainfo", "downloadGoogleImages", 
 @param nb_classes number of random classes to download
 @param nb_example number of image per class
 """
-def getImageNetNegativeImages(nb_classes : int, nb_example : int):
+def get_imageNet_negative_images(nb_classes : int, nb_example : int):
 
     rmtree(PATH+"ImageNetFetched/", ignore_errors=False)
     makedirs(PATH+"ImageNetFetched/")
@@ -41,7 +41,7 @@ def getImageNetNegativeImages(nb_classes : int, nb_example : int):
 @param classes the list of classes to download
 @param reset a boolean indicating if the /pipeline/images/ folder must be rm-ed before downloading the content
 """
-def downloadGoogleImages(classes : int, reset=False):
+def download_google_images(classes : int, reset=False):
 
     if reset:
         rmtree(PATH_IMAGES, ignore_errors=False)
@@ -51,7 +51,7 @@ def downloadGoogleImages(classes : int, reset=False):
 
     if new_classes != []:
         print("new classes to download :", new_classes, "\n")
-        getClassesImagesURLLIB(new_classes, download=True)
+        get_classes_images_URLLIB(new_classes, download=True)
 
 
 """
@@ -66,21 +66,21 @@ def get_metainfo(CUB : bool, IMAGES: bool, OMNIGLOT: bool) -> Tuple[str, str, Li
 
     assert (~CUB)&(IMAGES^OMNIGLOT) + CUB&(~(IMAGES&OMNIGLOT)) == True; "At least two dataset are set to true"
     
-    listClass = []
+    list_lass = []
 
     if CUB or IMAGES:
         PATH_DATA = HEAD+"pipeline/model/data/CUB/images/" if CUB else HEAD+"pipeline/images/"
         conversion_type = "CUB" if CUB else "IMG"
-        listClass = listdir(PATH_DATA)
+        list_lass = listdir(PATH_DATA)
 
     elif OMNIGLOT:
         PATH_DATA = HEAD+"pipeline/model/dataO/omniglot-py/images_background/" 
         conversion_type = "OMNI"
-        listAlphabet = listdir(PATH_DATA)
-        choosenAlphabet = listAlphabet[randint(0, len(listAlphabet)-1)]
-        listClass = [choosenAlphabet+"/"+char for char in listdir(PATH_DATA+choosenAlphabet)]
+        list_alphabet = listdir(PATH_DATA)
+        choosen_alphabet = list_alphabet[randint(0, len(list_alphabet)-1)]
+        list_lass = [choosen_alphabet+"/"+char for char in listdir(PATH_DATA+choosen_alphabet)]
 
-    return (PATH_DATA, conversion_type, listClass)
+    return (PATH_DATA, conversion_type, list_lass)
 
 
 """
@@ -90,7 +90,7 @@ def get_metainfo(CUB : bool, IMAGES: bool, OMNIGLOT: bool) -> Tuple[str, str, Li
 @classes the classes in the dataset
 @conversion_type the type of conversion to use
 """
-def cleanImages(PATH_DATA : str, classes : List[str], conversion_type : str):
+def clean_images(PATH_DATA : str, classes : List[str], conversion_type : str):
 
     provider = CleaningSetProvider(PATH_DATA, 20, 2, conversion_type)
     meta_set = provider.get_set_of_cleaning_sets([classes[randint(0, len(classes)-1)].replace(" ", "")])
@@ -99,17 +99,17 @@ def cleanImages(PATH_DATA : str, classes : List[str], conversion_type : str):
 
     i, j = randint(0, rows-1), randint(0, columns-1) 
 
-    justSupport = getOnlyImages([meta_set(i, j)[0]])
-    justQuery = meta_set(i, j)[1][0]
-    fullSupport = torch.cat((justSupport[:meta_set(i,j)[2]-1], meta_set(i, j)[1][0].unsqueeze(0)), 0)
+    just_support = get_only_images([meta_set(i, j)[0]])
+    just_query = meta_set(i, j)[1][0]
+    full_support = torch.cat((just_support[:meta_set(i,j)[2]-1], meta_set(i, j)[1][0].unsqueeze(0)), 0)
 
-    plot_images(fullSupport, title="all images", images_per_row=N_SHOT)
+    plot_images(full_support, title="all images", images_per_row=N_SHOT)
 
-    plot_images(justSupport, title="S("+str(i)+";"+str(j)+")", images_per_row=N_SHOT)
-    plot_images(justQuery, title="Q("+str(i)+";"+str(j)+")", images_per_row=1)
+    plot_images(just_support, title="S("+str(i)+";"+str(j)+")", images_per_row=N_SHOT)
+    plot_images(just_query, title="Q("+str(i)+";"+str(j)+")", images_per_row=1)
 
-    cleaner = Cleaner(PATH_MODEL, modelCleaning, meta_set, cuda_)
-    simM = cleaner.cleanSets()
+    cleaner = Cleaner(PATH_MODEL, model_cleaning, meta_set, cuda_)
+    similarity_matrix = cleaner.clean_sets()
 
 
 """
@@ -123,17 +123,17 @@ def cleanImages(PATH_DATA : str, classes : List[str], conversion_type : str):
 """
 def train_model(PATH_DATA : str, classes : List[str], conversion_type : str) -> Tensor:
 
-    supportClasses = [PATH_DATA+class_+"/" for class_ in classes]
-    N_SHOT = getMin(supportClasses)
-    supportSet, _ = getSets(supportClasses, N_SHOT, 0, conversion_type)
+    support_classes = [PATH_DATA+class_+"/" for class_ in classes]
+    N_SHOT = get_n_shot(support_classes)
+    support_set, _ = get_sets(support_classes, N_SHOT, 0, conversion_type)
 
     print("N_SHOT IS CONFIGURED TO BE", N_SHOT)
 
-    justSupport = getOnlyImages(supportSet)
-    plot_images(justSupport, title="support set", images_per_row=5)
-    training_model.training(supportSet, (0, 0), 0)
+    just_support = get_only_images(support_set)
+    plot_images(just_support, title="support set", images_per_row=5)
+    training_model.training(support_set, (0, 0), 0)
 
-    return supportSet
+    return support_set
 
 
 """
@@ -146,7 +146,7 @@ def train_model(PATH_DATA : str, classes : List[str], conversion_type : str) -> 
 
 @return a list containing the label of the image
 """
-def evaluate(image_path : str, supportSet : Tensor, classes : List[str], conversion_type : str) -> str:
+def evaluate(image_path : str, support_set : Tensor, classes : List[str], conversion_type : str) -> str:
 
     PATH_TO_UNKNOWN = image_path
     queries = listdir(PATH_TO_UNKNOWN)
@@ -154,9 +154,9 @@ def evaluate(image_path : str, supportSet : Tensor, classes : List[str], convers
     plot_images(query, title="unkown image", images_per_row=1)
 
     evaluation_model = Tester(training_model.model)
-    predictedLabel = evaluation_model.queryEvaluation(supportSet, query)
+    predicted_label = evaluation_model.query_evaluation(support_set, query)
 
     # possible error with classes[predictedLabel] to check thourougly
-    return classes[predictedLabel]
+    return classes[predicted_label]
 
 

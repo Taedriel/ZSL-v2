@@ -9,13 +9,13 @@ class ModelUtils:
   def __init__(self):
     pass
 
-  def getOptimizer(self, model):
+  def get_optimizer(self, model):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     return optimizer
   
   """
   @desc takes in image tensor and encapsulate them in one more dimension because models want (4, 0) tensor"""
-  def getImages(self, image1 : Tensor, image2 : Tensor) -> Tuple[Tensor, Tensor]:
+  def get_images(self, image1 : Tensor, image2 : Tensor) -> Tuple[Tensor, Tensor]:
 
     if image1.dim() < 4:
       image1 = image1.unsqueeze(0)
@@ -25,7 +25,7 @@ class ModelUtils:
 
     return image1, image2
 
-  def resetModelParam(self, model):
+  def reset_model_param(self, model):
 
     for layer in model.children():
       if hasattr(layer, 'reset_parameters'):
@@ -35,7 +35,7 @@ class ModelUtils:
 
 
   #TODO CAN CHANGE THE RELOADING MODEL HERE
-  def getModelName(self, context : str, cuda_ : bool):
+  def get_model_name(self, context : str, cuda_ : bool):
 
     valid_context = ["train", "clean"]
     if context in valid_context:
@@ -47,7 +47,7 @@ class ModelSaver:
   def __init__(self, path : str):
     self.PATH_MODEL = path
 
-  def saveModel(self, name : str, model_opti, epoch, loss_value):
+  def save_model(self, name : str, model_opti, epoch, loss_value):
 
     model, optimizer = model_opti[0], model_opti[1]
 
@@ -58,7 +58,7 @@ class ModelSaver:
     'loss': loss_value
     }, self.PATH_MODEL+name)
 
-  def loadModel(self, model_name, model, optimizer):
+  def load_model(self, model_name, model, optimizer):
     
     checkpoint = load(self.PATH_MODEL+model_name)
     model.load_state_dict(checkpoint['model_state_dict'])  

@@ -23,13 +23,13 @@ from typing import List, Tuple
 ]
 """
 
-def getFolderTensorsForTraining(path : str, supportNumber : int, queryNumber : int, label : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+def get_folder_tensors_for_training(path : str, support_number : int, query_number : int, label : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
 
   images = listdir(path)
   images.sort(key=natural_keys)
   support_i, query_i = [], []
 
-  for i in range(0, supportNumber):
+  for i in range(0, support_number):
     ridx = randint(0, len(images)-1)
     try:
       support_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
@@ -38,7 +38,7 @@ def getFolderTensorsForTraining(path : str, supportNumber : int, queryNumber : i
 
     images.remove(images[ridx])
   
-  for i in range(0, queryNumber):
+  for i in range(0, query_number):
     ridx = randint(0, len(images)-1)
     try:
       query_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
@@ -58,12 +58,12 @@ def getFolderTensorsForTraining(path : str, supportNumber : int, queryNumber : i
 
 @return the support and query set
 """
-def getSets(paths : List[str], supportNumber : int, queryNumber : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+def get_sets(paths : List[str], support_number : int, query_number : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
 
-  supportSet, querySet = [], []
+  support_set, query_set = [], []
   for label, path in enumerate(paths):
-    Si, Qi = getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type)
-    supportSet.append(Si)
-    querySet.append(Qi)
+    Si, Qi = get_folder_tensors_for_training(path, support_number, query_number, label, conversion_type)
+    support_set.append(Si)
+    query_set.append(Qi)
 
-  return supportSet, querySet
+  return support_set, query_set

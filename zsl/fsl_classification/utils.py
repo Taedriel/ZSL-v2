@@ -11,14 +11,14 @@ import re
 from .constants import *
 
 """
-@desc get mean and incertitude from a list of mesurements
+@desc get mean and incertitude from a list of mesurements. See https://www.lycee-champollion.fr/IMG/pdf/mesures_et_incertitudes.pdf for the meaning of the variables
 
 @param mesurements list of experiments, the title of the experiement is the first element.
 @param k the student number
 
 @return the string representing the mean and uncertainty of the experiments
 """
-def getUa(mesurements : List[float], k=1) -> Tuple[str, float, float]:
+def get_ua(mesurements : List[float], k=1) -> Tuple[str, float, float]:
 
   title = mesurements[0]
   l = mesurements[1:]
@@ -27,15 +27,16 @@ def getUa(mesurements : List[float], k=1) -> Tuple[str, float, float]:
   m_ = round(mean(l), 2)
   dm2 = [pow(mi - m_, 2) for mi in l]
   pstd = pow(inv_n*sum(dm2), 0.5)
+
   u = round(k*pstd*inv_ns, 2)
   
   return title+str(m_) + "% +- " + str(u) + " (with 95% confidence)" if k!=1 else "", m_, u
 
 
-def getUaList(listOfExperiences : List[List[float]], k=1):
+def get_ua_list(list_of_experiences : List[List[float]], k=1):
 
-  for mesurements in listOfExperiences:
-    string, m_, u = getUa(mesurements, k)
+  for mesurements in list_of_experiences:
+    string, m_, u = get_ua(mesurements, k)
     print(string)
 
 
@@ -46,14 +47,14 @@ def getUaList(listOfExperiences : List[List[float]], k=1):
 
 @return the set without label
 """
-def getOnlyImages(set_ : Tensor) -> Tensor:
+def get_only_images(set_ : Tensor) -> Tensor:
   
-  justSet = []
+  just_set = []
   for class_ in set_:
     for image in class_:
-      justSet.append(image[0])
+      just_set.append(image[0])
 
-  return torch.stack(justSet)
+  return torch.stack(just_set)
 
 
 def plot_images(images : Tensor, title : str, images_per_row : int):
@@ -62,17 +63,17 @@ def plot_images(images : Tensor, title : str, images_per_row : int):
   plt.imshow(utils.make_grid(images, nrow=images_per_row).permute(1, 2, 0))
 
 
-def saveFile(filename : str, data : List[any]):
+def save_file(filename : str, data : List[any]):
   file = open(PATH_MODEL+filename, "w+")
   for d in data:
     file.write(str(d)+"\n")
   file.close()
 
 
-def showRegression(rangeOfData : range, data : List[float], degree : int):
-  coef = np.polyfit(rangeOfData, data, degree)
+def show_regression(range_of_data : range, data : List[float], degree : int):
+  coef = np.polyfit(range_of_data, data, degree)
   poly1d_fn = np.poly1d(coef) 
-  plt.plot(rangeOfData, data, '-yo', rangeOfData, poly1d_fn(rangeOfData), '--k')
+  plt.plot(range_of_data, data, '-yo', range_of_data, poly1d_fn(range_of_data), '--k')
   plt.show()
   print("regression polynome :\n")
   print(np.poly1d(poly1d_fn))
@@ -80,18 +81,26 @@ def showRegression(rangeOfData : range, data : List[float], degree : int):
   print("\n")
 
 
-def showData(data : List[float], title : str, degree : int, saveInfo=[False, ""]):
+"""
+@desc show the data present in data
 
-  path = saveInfo[1]
-  if saveInfo[0]:
-    saveFile(path, data)
+@param data the data to display
+@param title the graph title
+@param degree the degree of the polynome for approximation
+@save_info list of (is the data to be saved, where)
+"""
+def show_data(data : List[float], title : str, degree : int, save_info=[False, ""]):
 
-  numberOfIteration = range(0, len(data))
+  path = save_info[1]
+  if save_info[0]:
+    save_file(path, data)
 
-  plt.plot(numberOfIteration, data)
+  number_of_iteration = range(0, len(data))
+
+  plt.plot(number_of_iteration, data)
   plt.title(title)
   plt.show()
-  showRegression(numberOfIteration, data, degree)
+  show_regression(number_of_iteration, data, degree)
 
 
 """
@@ -103,10 +112,10 @@ the model test.
 
 @return accuracy, confusion matrix and other details (see scipy)
 """
-def getMatrixReport(labels : int, predicted_labels : List[int]) -> Tuple[any, float, any]:
+def get_matrix_report(labels : int, predicted_labels : List[int]) -> Tuple[any, float, any]:
     print("\n")
-    listOfClasses = list(dict.fromkeys(labels))
-    res = classification_report(labels, predicted_labels, target_names=["c"+str(i) for i in range(1, len(listOfClasses)+1)],  output_dict=True)
+    list_of_classes = list(dict.fromkeys(labels))
+    res = classification_report(labels, predicted_labels, target_names=["c"+str(i) for i in range(1, len(list_of_classes)+1)],  output_dict=True)
     return res, res['accuracy'], confusion_matrix(labels, predicted_labels)
 
 
@@ -118,7 +127,7 @@ def getMatrixReport(labels : int, predicted_labels : List[int]) -> Tuple[any, fl
 
 @return the number of number in the specified range
 """
-def numberInInterval(interval : List[float], range_ : List[int]):
+def number_in_interval(interval : List[float], range_ : List[int]):
   in_ = 0
   minX = range_[0]
   maxX = range_[1]
@@ -132,29 +141,29 @@ def numberInInterval(interval : List[float], range_ : List[int]):
   return in_
 
 
-def getDistributionOnPred(correctPredictions : List[float], bins : int):
-  NumberDist = []
+def get_distribution_on_predictions(predictions : List[float], bins : int):
+  distribution = []
   for elem in bins:
-    NumberDist.append(100*numberInInterval(correctPredictions, elem)/len(correctPredictions))
+    distribution.append(100*number_in_interval(predictions, elem)/len(predictions))
 
-  return NumberDist
+  return distribution
 
 
-def createHistogramPreds(predictions : List[float], title : str) -> List[float]:
+def create_histogram_out_of_predictions(predictions : List[float], title : str) -> List[float]:
 
   bins = [(i*0.1, (i+1)*0.1) for i in range(0, 10)]
-  NumberDist = getDistributionOnPred(predictions, bins)
+  distribution = get_distribution_on_predictions(predictions, bins)
 
   fig, ax = plt.subplots()
-  for i, percentage in enumerate(NumberDist):
+  for i, percentage in enumerate(distribution):
     ax.add_patch(Rectangle((0.1*i, 0), 0.1, percentage, edgecolor='black'))
-  plt.ylim(int(max(NumberDist))+2)
+  plt.ylim(int(max(distribution))+2)
   plt.gca().invert_yaxis()
   plt.xlabel(title)
   plt.ylabel("number of predictions in %")
   plt.show()
 
-  return NumberDist
+  return distribution
 
 
 """
@@ -165,17 +174,17 @@ def createHistogramPreds(predictions : List[float], title : str) -> List[float]:
 
 @return two new distributions
 """
-def getSimilarityDistributions(dist : List[float], threshold : float):
-  dist1 = []
-  dist2 = []
+def get_similarity_distributions(dist : List[float], threshold : float):
+  disimilar_distribution = []
+  similar_distribution = []
 
   for x in dist:
     if x > threshold:
-      dist2.append(x)
+      similar_distribution.append(x)
     else:
-      dist1.append(x)
+      disimilar_distribution.append(x)
 
-  return dist1, dist2
+  return disimilar_distribution, similar_distribution
 
 
 """
@@ -186,17 +195,17 @@ def getSimilarityDistributions(dist : List[float], threshold : float):
 
 @return the r parameter of an image
 """
-def getR(dist1 : List[float], dist2 : List[float]) -> float:
+def get_r(disimilar_distribution : List[float], similar_distribution : List[float]) -> float:
 
-  L1, L2 = len(dist1), len(dist2)
+  L1, L2 = len(disimilar_distribution), len(similar_distribution)
   return L2/L1 if L1 != 0 else -1
 
 
-def printDistributions(dist : List[float], threshold : float):
+def print_distribution(dist : List[float], threshold : float):
 
-  dist1, dist2 = getSimilarityDistributions(dist, threshold)
+  dist1, dist2 = get_similarity_distributions(dist, threshold)
   L1, L2 = len(dist1), len(dist2)
-  r = getR(dist1, dist2)
+  r = get_r(dist1, dist2)
   
   print("r (L2/L1) = ", r if r >= 0 else "+inf")
   plt.hist(dist1,bins=10)
@@ -214,40 +223,18 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def getMin(supportClasses : List[str]) -> int:
-  """
-  because classes after cleaning do not necesserily have the same number of elements,
-  thus there's the need to avoid getting an out of range error
-  """
+"""
+@desc because classes after cleaning do not necesserily have the same number of elements, thus there's the need to avoid getting an out of range error
+"""
+def get_n_shot(support_classes : List[str]) -> int:
+
   lenghts = []
-  for pathToClass in supportClasses:
-    lenghts.append(len(listdir(pathToClass)))
+  for path_to_class in support_classes:
+    lenghts.append(len(listdir(path_to_class)))
 
   return min(lenghts)
 
 
-def printSimMatrix(M):
+def print_similarity_matrix(M):
   for row in M:
     print(" ".join(list(map(lambda x: '{0: <8}'.format(x),row))), "\n")
-
-
-"""
-@deprecated (we don't use file anymore)
-
-@desc get set of all classes to be used for cleaning from a text file
-
-@param classesFile the path to the file
-@param searchPrecision additional keywords
-
-@return the list of all classes without spaces between keywords
-"""
-def createListOfClasses(classesFile, searchPrecision=""):
-
-  classes = []
-  index=0
-
-  for animal in classesFile.readlines():
-    animal = animal.strip("\n").replace(" ", "")
-    classes.append(animal + searchPrecision)
-
-  return classes
