@@ -4,7 +4,6 @@ from .constants import *
 from .utils import natural_keys
 from .utils_dataset import get_image_tensor
 
-
 class MetaSet:
   """
   The MetaSet class implement a way to handle images during the cleaning process. 
