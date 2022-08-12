@@ -38,15 +38,21 @@ def get_parser(classe_name : str) -> BeautifulSoup:
   return soup
 
 
-"""
-@desc retrieve 20 images for a specific class
-
-@param path path to the folder that will contain the images
-@param classeName name of the class 
-
-@return the number of downloaded images
-"""
 def get_class_images(path : str, classe_name : List[str]) -> int:
+  """
+  retrieve 20 images for a specific class
+
+  Parameters
+  ----------
+  path :
+    path to the folder that will contain the images
+  classe_name : 
+    name of the class 
+
+  Return
+  ------
+  the number of downloaded images
+  """
   
   images_number = 0
   soup = get_parser(classe_name)

@@ -50,15 +50,21 @@ def get_folder_tensors_for_training(path : str, support_number : int, query_numb
   return support_i, query_i
 
 
-"""
-@desc get the support set and query set for training the model after cleaning
-
-@param supportNumber the n_shot parameter 
-@param queryNumber the number of query
-
-@return the support and query set
-"""
 def get_sets(paths : List[str], support_number : int, query_number : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+  """
+  get the support set and query set for training the model after cleaning
+
+  Parameters
+  ----------
+  support_number :
+    the n_shot parameter 
+  query_number :
+    the number of query
+
+  Return
+  ------
+  the support and query set
+  """
 
   support_set, query_set = [], []
   for label, path in enumerate(paths):

@@ -12,10 +12,22 @@ class ModelUtils:
   def get_optimizer(self, model):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     return optimizer
-  
-  """
-  @desc takes in image tensor and encapsulate them in one more dimension because models want (4, 0) tensor"""
+
+
   def get_images(self, image1 : Tensor, image2 : Tensor) -> Tuple[Tensor, Tensor]:
+      
+    """
+    takes in image tensor and encapsulate them in one more dimension because models want (4, 0) tensor
+
+    Parameters
+    ----------
+    Image1 / Image2 :
+      Image to encapsulate
+
+    Return
+    ------
+    both image encapsulated
+    """
 
     if image1.dim() < 4:
       image1 = image1.unsqueeze(0)

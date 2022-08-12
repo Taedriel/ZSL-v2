@@ -10,15 +10,26 @@ import re
 
 from .constants import *
 
-"""
-@desc get mean and incertitude from a list of mesurements. See https://www.lycee-champollion.fr/IMG/pdf/mesures_et_incertitudes.pdf for the meaning of the variables
 
-@param mesurements list of experiments, the title of the experiement is the first element.
-@param k the student number
-
-@return the string representing the mean and uncertainty of the experiments
-"""
 def get_ua(mesurements : List[float], k=1) -> Tuple[str, float, float]:
+
+  """
+  get mean and incertitude from a list of mesurements. 
+  
+  See https://www.lycee-champollion.fr/IMG/pdf/mesures_et_incertitudes.pdf for the meaning of the variables
+
+
+  Parameters
+  ----------
+  mesurements :
+    list of experiments, the title of the experiement is the first element.
+  k :
+    the associated student number
+
+  Return
+  ------
+  the string representing the mean and uncertainty of the experiments, the mean, and the uncertainty
+  """
 
   title = mesurements[0]
   l = mesurements[1:]
@@ -40,14 +51,19 @@ def get_ua_list(list_of_experiences : List[List[float]], k=1):
     print(string)
 
 
-"""
-@desc remove the label from each tuple (I, label) in a set of images (used for display)
-
-@param set_ the set of images to remove the labels from
-
-@return the set without label
-"""
 def get_only_images(set_ : Tensor) -> Tensor:
+  """
+  remove the label from each tuple (I, label) in a set of images (used for display)
+
+  Parameters
+  ----------
+  set_ :
+    the set of images to remove the labels from
+
+  Return
+  ------
+  the set without label
+  """
   
   just_set = []
   for class_ in set_:
@@ -81,15 +97,21 @@ def show_regression(range_of_data : range, data : List[float], degree : int):
   print("\n")
 
 
-"""
-@desc show the data present in data
-
-@param data the data to display
-@param title the graph title
-@param degree the degree of the polynome for approximation
-@save_info list of (is the data to be saved, where)
-"""
 def show_data(data : List[float], title : str, degree : int, save_info=[False, ""]):
+  """
+  show the data present in data
+
+  Parameters
+  ----------
+  data :
+    the data to display
+  title :
+    the graph title
+  degree :
+    the degree of the polynome for approximation
+  save_info :
+    list of (is the data to be saved, where)
+  """
 
   path = save_info[1]
   if save_info[0]:
@@ -103,31 +125,44 @@ def show_data(data : List[float], title : str, degree : int, save_info=[False, "
   show_regression(number_of_iteration, data, degree)
 
 
-"""
-@desc get the confusion matrix and additional information based on the result of 
-the model test.
-
-@param labels a list of number representing each class
-@param predicted_labels a list of predicted class by the model
-
-@return accuracy, confusion matrix and other details (see scipy)
-"""
 def get_matrix_report(labels : int, predicted_labels : List[int]) -> Tuple[any, float, any]:
-    print("\n")
-    list_of_classes = list(dict.fromkeys(labels))
-    res = classification_report(labels, predicted_labels, target_names=["c"+str(i) for i in range(1, len(list_of_classes)+1)],  output_dict=True)
-    return res, res['accuracy'], confusion_matrix(labels, predicted_labels)
+  """
+  get the confusion matrix and additional information based on the result of the model test.
+
+  Parameters
+  ----------
+  labels :
+    a list of number representing each class
+  predicted_labels :
+    a list of predicted class by the model
+
+  Return
+  ------
+  accuracy, confusion matrix and other details (see scipy)
+  """
+
+  print("\n")
+  list_of_classes = list(dict.fromkeys(labels))
+  res = classification_report(labels, predicted_labels, target_names=["c"+str(i) for i in range(1, len(list_of_classes)+1)],  output_dict=True)
+  return res, res['accuracy'], confusion_matrix(labels, predicted_labels)
 
 
-"""
-@desc verify if the numbers are in a specific range
-
-@param interval a list of number to check
-@param range_ the specific range 
-
-@return the number of number in the specified range
-"""
 def number_in_interval(interval : List[float], range_ : List[int]):
+  """
+  verify if the numbers are in a specific range
+
+  Parameters
+  ----------
+  interval : 
+    a list of number to check
+  range_ :
+    the specific range 
+
+  Return
+  ------
+  the number of number in the specified range
+  """
+
   in_ = 0
   minX = range_[0]
   maxX = range_[1]
@@ -166,15 +201,22 @@ def create_histogram_out_of_predictions(predictions : List[float], title : str) 
   return distribution
 
 
-"""
-@desc separate the original distribution into two based on a value
-
-@param dist the distribution to split in half
-@param threshold the value that represent the split
-
-@return two new distributions
-"""
 def get_similarity_distributions(dist : List[float], threshold : float):
+  """
+  separate the original distribution into two based on a value
+
+  Parameters
+  ----------
+  dist :
+    the distribution to split in half
+  threshold :
+    the value that represent the split
+
+  Return
+  ------
+  two new distributions
+  """
+
   disimilar_distribution = []
   similar_distribution = []
 
@@ -187,15 +229,21 @@ def get_similarity_distributions(dist : List[float], threshold : float):
   return disimilar_distribution, similar_distribution
 
 
-"""
-@desc get the r parameter used to discriminate between good and bad images during cleaning
-
-@param dist1 the lower distribution (from getSimilarityDistributions)
-@param dist2 the higher distribution(ibid.) 
-
-@return the r parameter of an image
-"""
 def get_r(disimilar_distribution : List[float], similar_distribution : List[float]) -> float:
+  """
+  get the r parameter used to discriminate between good and bad images during cleaning
+
+  Parameters
+  ----------
+  disimilar_distribution :
+    the lower distribution (from get_similarity_distributions)
+  similar_distribution:
+     the higher distribution(ibid.) 
+
+  Return
+  ------
+  the r parameter of an image
+  """
 
   L1, L2 = len(disimilar_distribution), len(similar_distribution)
   return L2/L1 if L1 != 0 else -1
@@ -223,10 +271,10 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-"""
-@desc because classes after cleaning do not necesserily have the same number of elements, thus there's the need to avoid getting an out of range error
-"""
 def get_n_shot(support_classes : List[str]) -> int:
+  """
+  because classes after cleaning do not necesserily have the same number of elements, thus there's the need to avoid getting an out of range error
+  """
 
   lenghts = []
   for path_to_class in support_classes:
