@@ -24,8 +24,30 @@ from typing import List, Tuple
 """
 
 def get_folder_tensors_for_training(path : str, support_number : int, query_number : int, label : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+  """
+  get a support / query set in tensor form from a folder
+
+  Parameters
+  ----------
+  path :
+    the path to the folder
+  support_number :
+    the number of images to put into the support set
+  query_number :
+    the number of images to put into the query set
+  label :
+    the label of the class
+  conversion_type :
+    the type of conversion to use
+
+  Return
+  ------
+  the support and query set of the folder
+  """
 
   images = listdir(path)
+
+  assert support_number+query_number <= len(images); "the specified numbers are too large"
   images.sort(key=natural_keys)
   support_i, query_i = [], []
 

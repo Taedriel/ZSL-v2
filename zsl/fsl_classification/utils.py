@@ -176,7 +176,21 @@ def number_in_interval(interval : List[float], range_ : List[int]):
   return in_
 
 
-def get_distribution_on_predictions(predictions : List[float], bins : int):
+def get_distribution_on_predictions(predictions : List[float], bins : List[int]):
+  """
+  create a distribution out of the predictions given in parameters
+
+  Parameters
+  ----------
+  predictions : 
+    a list of number to create the prediction from
+  bins :
+    a list of "bins" for the numbers in predictions to be classified in.
+
+  Return
+  ------
+  the disribution as specified by bins
+  """
   distribution = []
   for elem in bins:
     distribution.append(100*number_in_interval(predictions, elem)/len(predictions))
