@@ -4,21 +4,6 @@ from .constants import *
 from .utils import natural_keys
 from .utils_dataset import get_image_tensor
 
-"""
-Return the first elements of the Series.
-
-This function is mainly useful to preview the values of the
-Series without displaying all of it.
-
-Parameters
-----------
-n : int
-    Number of values to return.
-
-Return
-------
-"""
-
 class MetaSet:
   """
   The MetaSet class implement a way to handle images during the cleaning process. 
@@ -38,6 +23,9 @@ class MetaSet:
 
 
   def __call__(self, i : int, j : int) -> Tuple[Tensor, Tensor, int]:
+    """
+    return an "element" of the class
+    """
     return (self.support_set_matrix[i][j], self.query_set_matrix[i][j], self.support_lenght_matrix[i][j])
 
 
@@ -52,11 +40,6 @@ class MetaSet:
     self.buffer = [[], [], []]
 
 
-  """
-  @desc 
-
-  @param arrayOfValues 
-  """
   def add_to_buffer(self, array_of_value : List[int]):
     """
     add values to the buffer to be put into the matrices later
@@ -102,6 +85,7 @@ class CleaningSetProvider:
 
 
   def get_subset_of_images(self, path : str) -> List[Tensor]:
+
     images = listdir(path)
     images.sort(key=natural_keys)
     images = images[0:self.nb_positive]
@@ -161,6 +145,18 @@ class CleaningSetProvider:
 
 
   def get_set_of_cleaning_sets(self, list_classes : List[str]) -> MetaSet:
+    """
+    get a MetaSet contaning each possible support / query set with only one query each time.
+
+    Parameters
+    ----------
+    list_classes :
+      the list of classes that will be used to create the sets
+
+    Return
+    ------
+    the corresponding metaset
+    """
 
     meta_set = MetaSet()
     for class_ in list_classes:

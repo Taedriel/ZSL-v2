@@ -21,6 +21,7 @@ def get_image_tensor(path : str, conversion_type : str) -> Tensor:
 
   valid_conversion = ["CUB", "IMG"]
   convert = None
+  
   if conversion_type in valid_conversion:
     convert = transforms.Compose([
                                   transforms.ToTensor(),
