@@ -12,40 +12,42 @@ from tqdm import tqdm
 import itertools
 from scipy import stats
 
+
 def get_indexes(set_of_images : Tensor, nb_classes : int, cleaning=False) -> Tuple[int, int, int, int]:
 
-  nbEx =  len(set_of_images) if cleaning else len(set_of_images[0])
-  ci1, e1 = randint(0, nb_classes-1), randint(0, nbEx-1) 
-  ci2, e2 = randint(0, nb_classes-1), randint(0, nbEx-1)
+    nbEx =  len(set_of_images) if cleaning else len(set_of_images[0])
+    ci1, e1 = randint(0, nb_classes-1), randint(0, nbEx-1) 
+    ci2, e2 = randint(0, nb_classes-1), randint(0, nbEx-1)
 
-  return ci1, ci2, e1, e2
+    return ci1, ci2, e1, e2
 
 
-"""
-the cleaning parameter is here because cleaning data and training data have
-different shapes
-"""
+
 def get_random_pair(set_of_images : Tensor, cleaning=False) -> Tuple[Tensor, Tensor, int]:
+    """
+    the cleaning parameter is here because cleaning data and training data have different shapes
+    """
 
-  nbClasses = len(set_of_images)
-  ci1, ci2, e1, e2 = get_indexes(set_of_images, nbClasses, cleaning)
-  
-  I1, I2, s = 0, 0, 0
-  if cleaning:
-      c1, c2 = set_of_images[e1][1], set_of_images[e2][1]
-      I1, I2 = stack([set_of_images[e1][0]]), stack([set_of_images[e2][0]])
-      s = 1.0 if c1 == c2 else 0.0
-  else:
-    I1, I2 = stack([set_of_images[ci1][e1][0]]), stack([set_of_images[ci2][e2][0]])
-    s = 1.0 if ci1 == ci2 else 0.0
+    nbClasses = len(set_of_images)
+    ci1, ci2, e1, e2 = get_indexes(set_of_images, nbClasses, cleaning)
 
-  return I1, I2, s
+    I1, I2, s = 0, 0, 0
+    if cleaning:
+        c1, c2 = set_of_images[e1][1], set_of_images[e2][1]
+        I1, I2 = stack([set_of_images[e1][0]]), stack([set_of_images[e2][0]])
+        s = 1.0 if c1 == c2 else 0.0
+    else:
+        I1, I2 = stack([set_of_images[ci1][e1][0]]), stack([set_of_images[ci2][e2][0]])
+        s = 1.0 if ci1 == ci2 else 0.0
+
+    return I1, I2, s
 
 
-"""
-@desc Class implementing the training of the model after the cleaning process
-"""
+
 class Trainer(ModelUtils):
+    """
+    Class implementing the training of the model after the cleaning process
+    """
 
     def __init__(self, path_model : str, model : Siamese, cuda_ : bool, cleaning : bool):
 
@@ -90,16 +92,24 @@ class Trainer(ModelUtils):
         return loss_for_batch
 
 
-    """
-    @desc training of the model
-
-    @param supportSet the set of images as created by getSets
-    @param epoch_loss used if the training is to resumed
-    @param set_i used for tqdm (show on which class we are training)
-
-    @return losses a list of the mean loss per epoch
-    """
+    
     def training(self, support_set : Tensor, epoch_loss=(0, 0), set_i=0) -> List[int]:
+        """
+        Training of the model
+
+        Parameters
+        ----------
+        support_set :
+            the set of images as created by getSets
+        epoch_loss :
+            used if the training is to resumed
+        set_i :
+            used for tqdm (show on which class we are training)
+
+        Return
+        ------
+        losses a list of the mean loss per epoch
+        """
 
         number_of_epochs = 300-epoch_loss[0]
         validation_frequence = 10
@@ -123,23 +133,31 @@ class Trainer(ModelUtils):
 
 
 
-"""
-@desc Class implementing the testing part of the pipeline after the cleaning process
-"""
 class Tester(ModelUtils):
+    """
+    Class implementing the testing part of the pipeline after the cleaning process
+
+    This class implement both the testing part and stand-alone testing
+    """
 
     def __init__(self, model):
         super().__init__()
         self.model = model
 
-    """
-    @desc get the class that is the most represented in a list of predictions
-
-    @param predictions a list of prediction with (pred, label) format
-
-    @return the label of the most represented class
-    """
+    
     def get_first_class_based_on_representation(self, predictions : List[Tuple[Tensor, int]]) -> int:
+        """
+        get the class that is the most represented in a list of predictions
+
+        Parameters
+        ----------
+        predictions :
+            a list of prediction with (pred, label) format
+
+        Return
+        ------
+        the label of the most represented class
+        """
 
         representation = [0]*N_WAY
         for pred in predictions:
@@ -228,10 +246,12 @@ class Tester(ModelUtils):
 
 
 
-"""
-@desc class implementing the cleaning part of the pipeline
-"""
 class Cleaner(ModelUtils):
+    """
+    class implementing the cleaning part of the pipeline
+
+    It uses the MetaSet class to create all of the cleaning set possible by extracting one image at a time
+    """
 
     def __init__(self, path_model : str, model : Siamese, meta_set : MetaSet, cuda_ : bool):
         super().__init__()
@@ -282,17 +302,25 @@ class Cleaner(ModelUtils):
         return preds
 
 
-    """
-    @desc decide if the query is to be kept or not based on the r parameter
-
-    @param indices the position of the image in the matrix
-    @param Qij the query
-    @param r its r parameter has calculated by getR()
-    @param imageToClean a list of images
-
-    @return the updated list of images to remove
-    """
     def decide_on_image_type(self, indices : int, Qij : Tensor, r : float, image_to_clean : List[str]) -> List[str]:
+        """
+        decide if the query is to be kept or not based on the r parameter
+
+        Parameters
+        ----------
+        indices :
+            the position of the image in the matrix
+        Qij :
+            the query
+        r :
+            the r parameter has calculated by get_r()
+        imageToClean :
+            a list of images
+
+        Return
+        ------
+        the updated list of images to remove
+        """
 
         tmp = image_to_clean
         if 0 <= r < 1:

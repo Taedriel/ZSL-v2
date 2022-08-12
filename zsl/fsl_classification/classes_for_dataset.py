@@ -5,15 +5,30 @@ from .utils import natural_keys
 from .utils_dataset import get_image_tensor
 
 """
-@desc The MetaSet class implement a way to handle images during the cleaning process. 
-It does so by constructing a set of matrices, each representing one aspect of the data
+Return the first elements of the Series.
+
+This function is mainly useful to preview the values of the
+Series without displaying all of it.
+
+Parameters
+----------
+n : int
+    Number of values to return.
+
+Return
+------
 """
+
 class MetaSet:
+  """
+  The MetaSet class implement a way to handle images during the cleaning process. 
+
+  It does so by constructing a set of matrices, each representing one aspect of the data
+  """
 
   def __init__(self):
     """
-    the lenght parameter is here in order to avoid testing the query against
-    unrelated images
+    the lenght parameter is here in order to avoid testing the query against unrelated images
     """
     self.support_set_matrix = []
     self.query_set_matrix = []
@@ -38,30 +53,44 @@ class MetaSet:
 
 
   """
-  @desc add values to the buffer to be put into the matrices later
+  @desc 
 
-  @param arrayOfValues must have the form [support set Images, Query set images, lenght of support set]
+  @param arrayOfValues 
   """
   def add_to_buffer(self, array_of_value : List[int]):
+    """
+    add values to the buffer to be put into the matrices later
+
+    Parameters
+    ----------
+    array_of_values :
+      must have the form [support set Images, Query set images, lenght of support set]
+
+    """
+
     for index in range(0, 3):
       self.buffer[index].append(array_of_value[index])
 
 
-  """
-  @desc add the values present in the buffer to each matrix and then clear the buffer
-  """
+
   def set_line(self):
+    """
+    add the values present in the buffer to each matrix and then clear the buffer
+    """
+
     self.support_set_matrix.append(self.buffer[0])
     self.query_set_matrix.append(self.buffer[1])
     self.support_lenght_matrix.append(self.buffer[2])
     self.clear_buffer()
 
 
-"""
-@desc Class implementing the data structure creation for the cleaning part of the pipeline. 
-Among other thing, this class add negative examples to the support set after extracting the query.
-"""
+
 class CleaningSetProvider:
+  """
+  Class implementing the data structure creation for the cleaning part of the pipeline. 
+
+  Among other thing, this class add negative examples to the support set after extracting the query.
+  """
 
   def __init__(self, path_to_image : str, number_of_positives : int, number_of_negatives : int, conversion_type : str):
     self.path_to_negatives = HEAD+"pipeline/ImageNetFetched/imagenet_images/"
@@ -98,16 +127,23 @@ class CleaningSetProvider:
     return support_set
 
 
-  """
-  @desc construct one element to be put into the metaSet.
-
-  @param pathToClass the path to the class images
-  @param label the label of the class
-  @param q_index the index of the query image in the folder
-
-  @return the corresponding support and query set + the original lenght of the support set
-  """
   def get_folder_tensors_for_cleaning(self, path_to_class : str, label : int, q_index : int) -> Tuple[Tensor, Tensor, int]:
+    """
+    construct one element to be put into the metaSet.
+
+    Parameters
+    ----------
+    path_to_class :
+      the path to the class images
+    label :
+      the label of the class
+    q_index :
+      the index of the query image in the folder
+
+    Return
+    ------
+    the corresponding support and query set + the original lenght of the support set
+    """
 
     images = self.get_subset_of_images(path_to_class)
     original_lenght = len(images)

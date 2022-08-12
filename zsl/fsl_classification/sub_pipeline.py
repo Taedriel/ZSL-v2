@@ -16,14 +16,17 @@ from .globals import *
 __all__ = ["get_imageNet_negative_images", "get_metainfo", "download_google_images", "clean_images", "train_model", "evaluate"]
 
 
-
-"""
-@desc get random imagenet folders to add part (or every) of those images to the negative examples in the cleaning set.
-
-@param nb_classes number of random classes to download
-@param nb_example number of image per class
-"""
 def get_imageNet_negative_images(nb_classes : int, nb_example : int):
+    """
+    get random imagenet folders to add part (or every) of those images to the negative examples in the cleaning set.
+
+    Parameters
+    ----------
+    nb_classes :
+        number of random classes to download
+    nb_example :
+        number of image per class
+    """
 
     rmtree(PATH+"ImageNetFetched/", ignore_errors=False)
     makedirs(PATH+"ImageNetFetched/")
@@ -35,13 +38,18 @@ def get_imageNet_negative_images(nb_classes : int, nb_example : int):
         system("python "+PATH_DDL+"downloader.py -data_root "+HEAD+"pipeline/ImageNetFetched -number_of_classes "+str(nb_classes)+ " -images_per_class "+str(nb_example))
 
 
-"""
-@desc download 20 images from google per class specified. If a class specified is already downloaded, the program won't download it again.
 
-@param classes the list of classes to download
-@param reset a boolean indicating if the /pipeline/images/ folder must be rm-ed before downloading the content
-"""
 def download_google_images(classes : int, reset=False):
+    """
+    download 20 .jpg from google per class specified. If a class specified is already downloaded, the program won't download it again.
+
+    Parameters
+    ----------
+    classes :
+        the list of classes to download
+    reset :
+        a boolean indicating if the /pipeline/images/ folder must be rm-ed before downloading the content
+    """
 
     if reset:
         rmtree(PATH_IMAGES, ignore_errors=False)
@@ -54,15 +62,23 @@ def download_google_images(classes : int, reset=False):
         get_classes_images_URLLIB(new_classes, download=True)
 
 
-"""
-@desc get general information about the dataset used
-
-@param CUB / IMAGES / OMNIGLOT indicates which dataset to download.
-
-@return the path to the dataset, the type of image conversion (e.g use grayscale or not) and the list of classes in the dataset
-
-"""
 def get_metainfo(CUB : bool, IMAGES: bool, OMNIGLOT: bool) -> Tuple[str, str, List[str]]:
+
+    """
+    get general information about the dataset used.
+
+    Beware that using CUB or Omniglot without having downloaded the dataset in pipeline/model/data/CUB/images/ or pipeline/model/dataO/omniglot-py/images_background/
+    will result in an error. What's more, the program will still attempt to clean those dataset (when used in the pipeline)
+
+    Parameters
+    ----------
+    CUB / IMAGES / OMNIGLOT :
+        indicates which dataset to download.
+
+    Return
+    ------
+    the path to the dataset, the type of image conversion (e.g use grayscale or not) and the list of classes in the dataset
+    """
 
     assert (~CUB)&(IMAGES^OMNIGLOT) + CUB&(~(IMAGES&OMNIGLOT)) == True; "At least two dataset are set to true"
     
@@ -83,14 +99,20 @@ def get_metainfo(CUB : bool, IMAGES: bool, OMNIGLOT: bool) -> Tuple[str, str, Li
     return (PATH_DATA, conversion_type, list_lass)
 
 
-"""
-@desc clean the google images previously downloaded
 
-@param PATH_DATA the path to the dataset
-@classes the classes in the dataset
-@conversion_type the type of conversion to use
-"""
 def clean_images(PATH_DATA : str, classes : List[str], conversion_type : str):
+    """
+    clean the google images previously downloaded
+
+    Parameters
+    ----------
+    PATH_DATA :
+        the path to the dataset
+    classes :
+        the classes in the dataset
+    conversion_type :
+        the type of conversion to use
+    """
 
     provider = CleaningSetProvider(PATH_DATA, 20, 2, conversion_type)
     meta_set = provider.get_set_of_cleaning_sets([classes[randint(0, len(classes)-1)].replace(" ", "")])
@@ -112,16 +134,24 @@ def clean_images(PATH_DATA : str, classes : List[str], conversion_type : str):
     similarity_matrix = cleaner.clean_sets()
 
 
-"""
-@desc train a siamese network model with the specified dataset
 
-@param PATH_DATA the path to the training / testing dataset
-@param classes the list of classes in the dataset
-@conversion_type the type of conversion to use
-
-@return the support set used for training
-"""
 def train_model(PATH_DATA : str, classes : List[str], conversion_type : str) -> Tensor:
+    """
+    train a siamese network model with the specified dataset
+
+    Parameters
+    ----------
+    PATH_DATA :
+        the path to the training / testing dataset
+    classes :
+        the list of classes in the dataset
+    conversion_type :
+        the type of conversion to use
+
+    Return
+    ------
+    the support set used for training
+    """
 
     support_classes = [PATH_DATA+class_+"/" for class_ in classes]
     N_SHOT = get_n_shot(support_classes)
@@ -136,17 +166,26 @@ def train_model(PATH_DATA : str, classes : List[str], conversion_type : str) -> 
     return support_set
 
 
-"""
-@desc evaluate a query with the trained model
 
-@param image_path the path to the query
-@param supportSet the support set used in training
-@param classes the list of classes in the dataset
-@conversion_type the type of conversion to use
-
-@return a list containing the label of the image
-"""
 def evaluate(image_path : str, support_set : Tensor, classes : List[str], conversion_type : str) -> str:
+    """
+    evaluate a query with the trained model
+
+    Parameters
+    ----------
+    image_path :
+        the path to the query
+    support_set :
+        the support set used in training
+    classes :
+        the list of classes in the dataset
+    conversion_type :
+        the type of conversion to use
+
+    Return
+    ------
+    a list containing the label of the image
+    """
 
     PATH_TO_UNKNOWN = image_path
     queries = listdir(PATH_TO_UNKNOWN)

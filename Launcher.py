@@ -43,15 +43,21 @@ def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
     return plausible
 
 
-"""
-@desc predict the label of the unknown image
-
-@param image_path the path to the query
-@param plausible_classes the list of hypohtetical classes the image could be
-
-@return the label of the image
-"""
 def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> List[str]:
+    """
+    predict the label of the unknown image
+
+    Parameters
+    ----------
+    image_path :
+        the path to the query
+    plausible_classes :
+        the list of hypohtetical classes the image could be
+
+    Return
+    ------
+    the label of the image
+    """
 
     get_imageNet_negative_images(6, 10)
     download_google_images(plausible_classes, reset=False)

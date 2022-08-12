@@ -9,8 +9,10 @@ enter = 2048
 hidden = 2000
 
 class Siamese(nn.Module):
-
   """
+  class implementing the siamese network architecture
+
+  this architecture is of the form, 
   I1 --> CNN --> u
                   \
                     |u-v| --> NN --> x --> s(x) --> L(.,.)
