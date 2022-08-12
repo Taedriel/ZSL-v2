@@ -1,6 +1,7 @@
 from .misc import *
 from .word_embeddings import *
 from .embeddings_solver import *
+from .fsl_classification import *
 
 import logging
 

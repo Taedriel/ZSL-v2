@@ -1,4 +1,7 @@
 import sys
+import os
+
+from zsl.fsl_classification.sub_pipeline import cleanImages, evaluate, get_metainfo, downloadGoogleImages, train_model
 sys.path.append("./zsl")
 
 from typing import List
@@ -6,6 +9,7 @@ from torch import Tensor
 from Orange.data import Table
 
 import zsl
+
 
 runtime = {}
 
@@ -39,9 +43,14 @@ def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
     return plausible
 
 def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> List[str]:
-    return [("platypus", 0.89), ("beaver", 0.23)]
 
+    downloadGoogleImages(plausible_classes, reset=False)
+    PATH_DATA, conversion_type, _ = get_metainfo(CUB=False, IMAGES=True, OMNIGLOT=False)
+    cleanImages(PATH_DATA, plausible_classes, conversion_type)
+    supportSet = train_model(PATH_DATA, plausible_classes, conversion_type)
+    predicted_class = evaluate(zsl.fsl_classification.HEAD+"pipeline/unknown image/", supportSet, plausible_classes, conversion_type)
 
+    return [predicted_class]
 
 def run_pipeline(image_path : str, intermediate_result = False):
 
@@ -58,6 +67,8 @@ def run_pipeline(image_path : str, intermediate_result = False):
 
 
 def preprocess():
+
+    os.makedirs("./zsl/fsl_classification/pipeline/images/", exist_ok=True)
 
     generic_table = Table("./ressources/Ayoub-average.csv")
     supp_info_table = Table("./ressources/class_map_imagenet.csv")
