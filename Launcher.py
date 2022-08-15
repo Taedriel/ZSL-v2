@@ -4,6 +4,8 @@ import os
 from zsl.fsl_classification.sub_pipeline import get_imageNet_negative_images, clean_images, evaluate, get_metainfo, download_google_images, train_model
 sys.path.append("./zsl")
 
+from zsl.visual_to_txt_mapping.mapping_generator import generate_textual_mapping
+
 from typing import List
 from torch import Tensor
 from Orange.data import Table
@@ -27,7 +29,7 @@ def check_file_presence():
             raise FileNotFoundError(file)
 
 def image_to_text_embedding(image_path : str) -> List[float] or Tensor:
-    return list(range(300))
+    return generate_textual_mapping(image_path, "zsl/visual_to_txt_mapping/model/mapping_model.model")
 
 def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
 
