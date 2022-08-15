@@ -1,7 +1,6 @@
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+from .imports import os, np, tf, load_model, preprocessing, preprocess_input
 
-from imports import *
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 def generate_textual_features(img_path:str, model_path:str) -> np.ndarray:

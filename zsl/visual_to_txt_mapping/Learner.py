@@ -1,6 +1,6 @@
-from imports import *
-from DataLoader import ImageGenerator
-from Solver import Solver
+from .imports import *
+from .DataLoader import ImageGenerator
+from .Solver import Solver
 
 class Learner():
     """Base learner object"""
@@ -33,7 +33,7 @@ class Learner():
 
 class ZeroShotLearner(Learner):
     """
-    Zero shot learner
+    Mapping model
     
     Attributes
     ----------
@@ -44,7 +44,6 @@ class ZeroShotLearner(Learner):
     metrics :
         List of metrics to observe the performance of the model while training
     """
-    """"""
     def __init__(self, data : ImageGenerator, loss=tf.keras.losses.CosineSimilarity(axis=1), metrics=['accuracy']):
         self.data = data
         self.model = self.create_model()
