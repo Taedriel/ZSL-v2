@@ -12,25 +12,18 @@ from Orange.data import Table
 
 import zsl
 
-
 runtime = {}
 
-def check_file_presence():
-    """check if all the ressource files are present
+def check_file_presence(filename : str) -> str or None:
+    from os.path import exists, join
 
-    Raises: 
-        FileNotFoundError: when a file is not found
-    """
-    from os.path import exists
-
-    file_to_check = [
-        "./ressources/Ayoub-average.csv",
-        "./ressources/class_map_imagenet.csv",
-    ]
-
-    for file in file_to_check:
-        if not exists(file):
-            raise FileNotFoundError(file)
+    abs_path = join(os.getcwd(), filename)
+    
+    if not exists(abs_path):
+        raise FileNotFoundError(abs_path)
+    else:
+        return abs_path
+            
 
 def image_to_text_embedding(image_path : str) -> List[float] or Tensor:
     return generate_textual_mapping(image_path, "zsl/visual_to_txt_mapping/model/mapping_model.model")
@@ -84,11 +77,10 @@ def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> Li
 
 def preprocess():
     """load ressource files and prepare the runtime environment"""
-
     os.makedirs("./zsl/fsl_classification/pipeline/images/", exist_ok=True)
 
-    generic_table = Table("./ressources/Ayoub-average.csv")
-    supp_info_table = Table("./ressources/class_map_imagenet.csv")
+    generic_table = Table(check_file_presence("ressources/embeddings/general-mapping-average.csv"))
+    supp_info_table = Table(check_file_presence("ressources/class_map_imagenet.csv"))
 
     runtime["prior_knowledge_table"] = zsl.WeSeDa.left_join(generic_table, supp_info_table)
 
@@ -118,7 +110,6 @@ def run_pipeline(image_path : str, intermediate_result = False) -> str:
 
 
 if __name__ == "__main__":
-    check_file_presence()
     preprocess()
     text_embedding, plausible_classes, prediction = run_pipeline("examples/002.png", intermediate_result = True)
     print(text_embedding, plausible_classes, prediction)
