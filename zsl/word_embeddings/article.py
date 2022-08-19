@@ -50,6 +50,9 @@ class ArticleRetriever:
         self.__load()
 
     def __load(self):
+        """
+        load the file if it exist, otherwise, create it
+        """
         if not exists(self.get_filename()):
             self.articles_map = {}
             log.info(f"creating file {self.get_filename()}")

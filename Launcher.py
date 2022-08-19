@@ -16,12 +16,16 @@ import zsl
 runtime = {}
 
 def check_file_presence():
+    """check if all the ressource files are present
+
+    Raises: 
+        FileNotFoundError: when a file is not found
+    """
     from os.path import exists
 
     file_to_check = [
         "./ressources/Ayoub-average.csv",
         "./ressources/class_map_imagenet.csv",
-        "./ressources/custom-wikipedia2vec-300_superclass.csv"
     ]
 
     for file in file_to_check:
@@ -32,6 +36,14 @@ def image_to_text_embedding(image_path : str) -> List[float] or Tensor:
     return generate_textual_mapping(image_path, "zsl/visual_to_txt_mapping/model/mapping_model.model")
 
 def text_embedding_to_classes(embedding : List[float or Tensor]) -> List[str]:
+    """perform hierarchical clustering on the embedding and return the list of classes predicted
+
+    Args:
+        embedding (List[float or Tensor]): the list of embedding that form prior knowledge
+
+    Returns:
+        List[str]: a list of plausible classes
+    """
 
     embedding = zsl.WeSeDa(embedding, runtime["prior_knowledge_table"], runtime["superclass_embeddings"]) \
         .solve(lambda x : None, lambda x : 0.1 + 0.05 * x)
@@ -70,7 +82,27 @@ def classes_to_prediction(image_path : str, plausible_classes : List[str]) -> Li
 
     return [predicted_class]
 
-def run_pipeline(image_path : str, intermediate_result = False):
+def preprocess():
+    """load ressource files and prepare the runtime environment"""
+
+    os.makedirs("./zsl/fsl_classification/pipeline/images/", exist_ok=True)
+
+    generic_table = Table("./ressources/Ayoub-average.csv")
+    supp_info_table = Table("./ressources/class_map_imagenet.csv")
+
+    runtime["prior_knowledge_table"] = zsl.WeSeDa.left_join(generic_table, supp_info_table)
+
+
+def run_pipeline(image_path : str, intermediate_result = False) -> str:
+    """run the pipeline on the image given in parameter
+
+    Args:
+        image_path (str): the path to the image to classify
+        intermediate_result (bool, optional): whether to return intermediate result. Defaults to False.
+
+    Returns:
+        str: a class predicted
+    """
 
     text_embedding = image_to_text_embedding(image_path)
 
@@ -83,16 +115,6 @@ def run_pipeline(image_path : str, intermediate_result = False):
     else:
         return prediction
 
-
-def preprocess():
-
-    os.makedirs("./zsl/fsl_classification/pipeline/images/", exist_ok=True)
-
-    generic_table = Table("./ressources/Ayoub-average.csv")
-    supp_info_table = Table("./ressources/class_map_imagenet.csv")
-
-    runtime["prior_knowledge_table"] = zsl.WeSeDa.left_join(generic_table, supp_info_table)
-    runtime["superclass_embeddings"] = Table("./ressources/custom-wikipedia2vec-300_superclass.csv")
 
 
 if __name__ == "__main__":
