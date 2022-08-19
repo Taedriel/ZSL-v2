@@ -1,6 +1,8 @@
+from zsl.fsl_classification.classes_for_dataset import MetaSet
+from zsl.fsl_classification.siamese_network import Siamese
 from .constants import *
 from .utils_sn import *
-from .utils import plot_images, getSimilarityDistributions, getR, printSimMatrix
+from .utils import plot_images, get_similarity_distributions, get_r, print_similarity_matrix
 
 from torch import stack, tensor, save, no_grad
 from torch.nn import BCELoss
@@ -8,74 +10,76 @@ from torch.nn import BCELoss
 from random import randint
 from tqdm import tqdm
 import itertools
+from scipy import stats
 
 
-def getIndexes(setOfImages, nbClasses, cleaning=False):
+def get_indexes(set_of_images : Tensor, nb_classes : int, cleaning=False) -> Tuple[int, int, int, int]:
 
-  nbEx =  len(setOfImages) if cleaning else len(setOfImages[0])
-  ci1, e1 = randint(0, nbClasses-1), randint(0, nbEx-1) 
-  ci2, e2 = randint(0, nbClasses-1), randint(0, nbEx-1)
+    nbEx =  len(set_of_images) if cleaning else len(set_of_images[0])
+    ci1, e1 = randint(0, nb_classes-1), randint(0, nbEx-1) 
+    ci2, e2 = randint(0, nb_classes-1), randint(0, nbEx-1)
 
-  return ci1, ci2, e1, e2
-
-
-"""
-the cleaning parameter is here because cleaning data and training data have
-different shapes
-"""
-def getRandomPair(setOfImages, cleaning=False):
-
-  nbClasses = len(setOfImages)
-  ci1, ci2, e1, e2 = getIndexes(setOfImages, nbClasses, cleaning)
-  
-  I1, I2, s = 0, 0, 0
-  if cleaning:
-      c1, c2 = setOfImages[e1][1], setOfImages[e2][1]
-      I1, I2 = stack([setOfImages[e1][0]]), stack([setOfImages[e2][0]])
-      s = 1.0 if c1 == c2 else 0.0
-  else:
-    I1, I2 = stack([setOfImages[ci1][e1][0]]), stack([setOfImages[ci2][e2][0]])
-    s = 1.0 if ci1 == ci2 else 0.0
-
-  return I1, I2, s
+    return ci1, ci2, e1, e2
 
 
-"""
-@desc Class implementing the training of the model after the cleaning process
-"""
+
+def get_random_pair(set_of_images : Tensor, cleaning=False) -> Tuple[Tensor, Tensor, int]:
+    """
+    the cleaning parameter is here because cleaning data and training data have different shapes
+    """
+
+    nbClasses = len(set_of_images)
+    ci1, ci2, e1, e2 = get_indexes(set_of_images, nbClasses, cleaning)
+
+    I1, I2, s = 0, 0, 0
+    if cleaning:
+        c1, c2 = set_of_images[e1][1], set_of_images[e2][1]
+        I1, I2 = stack([set_of_images[e1][0]]), stack([set_of_images[e2][0]])
+        s = 1.0 if c1 == c2 else 0.0
+    else:
+        I1, I2 = stack([set_of_images[ci1][e1][0]]), stack([set_of_images[ci2][e2][0]])
+        s = 1.0 if ci1 == ci2 else 0.0
+
+    return I1, I2, s
+
+
+
 class Trainer(ModelUtils):
+    """
+    Class implementing the training of the model after the cleaning process
+    """
 
-    def __init__(self, path_model, model, cuda_, cleaning):
+    def __init__(self, path_model : str, model : Siamese, cuda_ : bool, cleaning : bool):
 
         super().__init__()
         self.cuda_ = cuda_
-        self.cleaningPhase = cleaning
+        self.cleaning_phase = cleaning
         self.model = model
-        self.optimizer = super().getOptimizer(self.model.metric)
+        self.optimizer = super().get_optimizer(self.model.metric)
         self.LOSS = BCELoss()
 
         self.model_saver = ModelSaver(path_model)
 
 
-    def resetModel(self, reset_by_param=False):
+    def reset_model(self, reset_by_param=False):
 
         if not reset_by_param:
-            modelName = super().getModelName("train", self.cuda_)
-            _, model, opti = self.model_saver.loadModel(modelName, self.model.metric, self.optimizer)
+            model_name = super().get_model_name("train", self.cuda_)
+            _, model, opti = self.model_saver.load_model(model_name, self.model.metric, self.optimizer)
             self.model.metric, self.optimizer = model, opti
         else:
-            self.model.metric = super().resetModelParam(self.model.metric)
-            self.optimizer = super().getOptimizer(self.model.metric)
+            self.model.metric = super().reset_model_param(self.model.metric)
+            self.optimizer = super().get_optimizer(self.model.metric)
 
 
-    def epoch(self, suppSet):
+    def epoch(self, support_set : Tensor) -> List[float]:
 
-        lossForBatch = []
-        for i in range(0, batchSize):
+        loss_for_batch = []
+        for i in range(0, batch_size):
 
-            I1, I2, s = getRandomPair(suppSet, self.cleaningPhase)
-            I1, I2 = super().getImages(I1, I2)
-            w, u, v = self.model.createCombinedVector(I1, I2)
+            I1, I2, s = get_random_pair(support_set, self.cleaning_phase)
+            I1, I2 = super().get_images(I1, I2)
+            w, u, v = self.model.create_combined_vector(I1, I2)
             out = self.model(w)
             s = tensor([s]).cuda() if self.cuda_ else tensor([s])
 
@@ -83,37 +87,45 @@ class Trainer(ModelUtils):
             loss = self.LOSS(out, s)
             loss.backward()
             self.optimizer.step()
-            lossForBatch.append(loss.item())
+            loss_for_batch.append(loss.item())
 
-        return lossForBatch
+        return loss_for_batch
 
 
-    """
-    @desc training of the model
+    
+    def training(self, support_set : Tensor, epoch_loss=(0, 0), set_i=0) -> List[int]:
+        """
+        Training of the model
 
-    @param supportSet the set of images as created by getSets
-    @param epoch_loss used if the training is to resumed
-    @param set_i used for tqdm (show on which class we are training)
+        Parameters
+        ----------
+        support_set :
+            the set of images as created by getSets
+        epoch_loss :
+            used if the training is to resumed
+        set_i :
+            used for tqdm (show on which class we are training)
 
-    @return losses a list of the mean loss per epoch
-    """
-    def training(self, supportSet, epoch_loss=(0, 0), set_i=0):
+        Return
+        ------
+        losses a list of the mean loss per epoch
+        """
 
-        numberOfEpochs = 300-epoch_loss[0]
-        valFreq = 10
+        number_of_epochs = 300-epoch_loss[0]
+        validation_frequence = 10
 
         losses = [epoch_loss[1]] if epoch_loss[1] != 0 else []
 
         self.model.train()
-        for epoch_i in tqdm(range(0, numberOfEpochs), desc="Traning on Set "+str(set_i)):
+        for epoch_i in tqdm(range(0, number_of_epochs), desc="Traning on Set "+str(set_i)):
 
-            batchLoss = self.epoch(supportSet)
-            mean_loss = sum(batchLoss)*1.0/len(batchLoss)
+            batch_loss = self.epoch(support_set)
+            mean_loss = sum(batch_loss)*1.0/len(batch_loss)
             losses.append(mean_loss)
 
-            if epoch_i % valFreq == 0 and epoch_i != 0:
+            if epoch_i % validation_frequence == 0 and epoch_i != 0:
                 model_opti =  [self.model.metric, self.optimizer]
-                self.model_saver.saveModel("SNTrain.pt", model_opti, epoch_i, mean_loss)
+                self.model_saver.save_model("SNTrain.pt", model_opti, epoch_i, mean_loss)
 
         save(self.model.metric.state_dict(), PATH_MODEL+"SN.pt")
 
@@ -121,23 +133,31 @@ class Trainer(ModelUtils):
 
 
 
-"""
-@desc Class implementing the testing part of the pipeline after the cleaning process
-"""
 class Tester(ModelUtils):
+    """
+    Class implementing the testing part of the pipeline after the cleaning process
+
+    This class implement both the testing part and stand-alone testing
+    """
 
     def __init__(self, model):
         super().__init__()
         self.model = model
 
-    """
-    @desc get the class that is the most represented in a list of predictions
+    
+    def get_first_class_based_on_representation(self, predictions : List[Tuple[Tensor, int]]) -> int:
+        """
+        get the class that is the most represented in a list of predictions
 
-    @param predictions a list of prediction with (pred, label) format
+        Parameters
+        ----------
+        predictions :
+            a list of prediction with (pred, label) format
 
-    @return the label of the most represented class
-    """
-    def getFirstClassBasedOnRepresentation(self, predictions):
+        Return
+        ------
+        the label of the most represented class
+        """
 
         representation = [0]*N_WAY
         for pred in predictions:
@@ -146,91 +166,94 @@ class Tester(ModelUtils):
         return representation.index(max(representation))
 
 
-    def isModelCorrect(self, predictions, queryClass):
+    def is_model_correct(self, predictions : List[Tuple[Tensor, int]], query_class : int) -> Tuple[int, int, float]:
 
         pred_sorted = sorted(predictions, key=lambda tup: tup[-1], reverse=True)
         first_five = pred_sorted[0:5]
 
-        predictedClassLabel = self.getFirstClassBasedOnRepresentation(first_five)
-        similarity = int(queryClass == predictedClassLabel)
-        predictionScore = first_five[0][1]
+        predicted_class_label = self.get_first_class_based_on_representation(first_five)
+        similarity = int(query_class == predicted_class_label)
+        prediction_score = first_five[0][1]
 
-        return similarity, predictedClassLabel, predictionScore
+        return similarity, predicted_class_label, prediction_score
 
 
-    def model_prediction(self, queryInfo, imageInfo, triplets):
+    def model_prediction(self, query_info : Tuple[Tensor, int], image_info : Tuple[Tensor, int], triplets : List[Tuple[Tensor, int]]) -> Tuple[List[Tuple[Tensor, int]], int, int, float]:
 
-        image, imageClass = imageInfo
-        query, queryClass = queryInfo
+        image, image_class = image_info
+        query, query_class = query_info
 
-        query, image = super().getImages(query, image)
-        w, u, v = self.model.createCombinedVector(query, image)
+        query, image = super().get_images(query, image)
+        w, u, v = self.model.create_combined_vector(query, image)
         p = self.model(w)
-        triplets.append((imageClass, p))
+        triplets.append((image_class, p))
 
-        areReallySimilar, imageClass, prediction = self.isModelCorrect(triplets, queryClass)
+        are_really_similar, image_class, prediction = self.is_model_correct(triplets, query_class)
 
-        return triplets, areReallySimilar, imageClass, prediction
+        return triplets, are_really_similar, image_class, prediction
 
 
-    def evaluateWithMetric(self, supportSet, querySet):
+    def evaluate_with_metric(self, support_set : Tensor, query_set : Tensor):
 
         triplets = []
         pred_labels = []
         query_labels = []
-        correctPreds, incorrectPreds, indexIncorrectQuery = [], [], []
+        correct_predictions, incorrect_predictions, index_incorrect_query = [], [], []
         correct = 0
 
         self.model.eval()
         with no_grad():
 
-            for indexQuery, queryInfo in enumerate(list(itertools.chain(*querySet))):
+            for index_query, query_info in enumerate(list(itertools.chain(*query_set))):
 
-                _, queryClass = queryInfo
-                for imageInfo in list(itertools.chain(*supportSet)):
-                    triplets, areReallySimilar, imageClass, prediction = self.model_prediction(queryInfo, imageInfo, triplets)
+                _, queryClass = query_info
+                for image_info in list(itertools.chain(*support_set)):
+                    triplets, are_really_similar, image_class, prediction = self.model_prediction(query_info, image_info, triplets)
                     
-                if areReallySimilar == 1: 
+                if are_really_similar == 1: 
                     correct+=1
-                    correctPreds.append(prediction)
+                    correct_predictions.append(prediction)
                 else:
-                    incorrectPreds.append(prediction)
-                    indexIncorrectQuery.append(indexQuery)
+                    incorrect_predictions.append(prediction)
+                    index_incorrect_query.append(index_query)
 
                 triplets = []
-                pred_labels.append(imageClass)
+                pred_labels.append(image_class)
                 query_labels.append(queryClass)
 
-        return "\n accuracy :"+str(100.0*correct/(N_WAY*N_QUERY)), pred_labels, query_labels, correctPreds, incorrectPreds, indexIncorrectQuery
+        return "\n accuracy :"+str(100.0*correct/(N_WAY*N_QUERY)), pred_labels, query_labels, correct_predictions, incorrect_predictions, index_incorrect_query
         
-    def queryEvaluation(self, supportSet, query):
+
+    def query_evaluation(self, support_set : Tensor, query : Tensor) -> int:
 
         triplets = []
         self.model.eval()
         with no_grad():
 
-            for imageInfo in list(itertools.chain(*supportSet)):
+            for imageInfo in list(itertools.chain(*support_set)):
 
                 image, imageClass = imageInfo
-                query, image = super().getImages(query, image)
-                w, _, _ = self.model.createCombinedVector(query, image)
+                query, image = super().get_images(query, image)
+                w, _, _ = self.model.create_combined_vector(query, image)
                 p = self.model(w)
                 triplets.append((imageClass, p))
             
         pred_sorted = sorted(triplets, key=lambda tup: tup[-1], reverse=True)
         first_five = pred_sorted[0:5]
-        predictedClassLabel = self.getFirstClassBasedOnRepresentation(first_five)
+        predicted_class_label = self.get_first_class_based_on_representation(first_five)
 
-        return predictedClassLabel
+        return predicted_class_label
 
 
 
-"""
-@desc class implementing the cleaning part of the pipeline
-"""
 class Cleaner(ModelUtils):
+    """
+    class implementing the cleaning part of the pipeline
 
-    def __init__(self, path_model, model, meta_set, cuda_):
+    It uses the MetaSet class to create all of the cleaning set possible by extracting one image at a time
+    """
+
+    def __init__(self, path_model : str, model : Siamese, meta_set : MetaSet, cuda_ : bool):
         super().__init__()
 
         self.meta_set = meta_set
@@ -239,115 +262,125 @@ class Cleaner(ModelUtils):
         self.model_t = Trainer(path_model, model, cuda_, True)
         self.model_saver = ModelSaver(path_model)
 
-        self.falseVector = []
-        self.trueVector = []
+        self.false_vector = []
+        self.true_vector = []
 
         self.cuda_ = cuda_
 
 
-    def isQueryOutsider(self, Eij):
+    def is_query_outsider(self, Eij : Tuple[Tensor, Tensor, int]) -> float:
 
         model = self.model_t.model
-        supportSet, querySet, lenght = Eij[0], Eij[1], Eij[2]-1
-        preds = []
+        support_set, query_set, lenght = Eij[0], Eij[1], Eij[2]-1
+        predictions = []
 
         model.eval()
         with no_grad():
 
-            query_raw = querySet[0]
-            for image_raw, imageClass in supportSet[:lenght]:
+            query_raw = query_set[0]
+            for image_raw, image_class in support_set[:lenght]:
 
-                query, image = self.model_t.getImages(query_raw, image_raw)
-                w = model.createCombinedVector(query, image)
+                query, image = self.model_t.get_images(query_raw, image_raw)
+                w = model.create_combined_vector(query, image)
                 p = model(w)
                 res = round(p.cpu().item(), 2)
-                preds.append(res)
+                predictions.append(res)
             
-        return preds
+        return predictions
 
 
     #TODO CAN CHANGE THE RELOADING MODEL HERE(cleaning context)
-    def getPredictionsForOneQuery(self, Eij, indexSet):
+    def get_predictions_for_one_query(self, Eij : Tuple[Tensor, Tensor, int], index_set : int) -> float:
 
-        modelName = super().getModelName("clean", self.cuda_)
-        _, model_, opti = self.model_saver.loadModel(modelName, self.model_t.model.metric, self.model_t.optimizer)
+        model_name = super().get_model_name("clean", self.cuda_)
+        _, model_, opti = self.model_saver.load_model(model_name, self.model_t.model.metric, self.model_t.optimizer)
         self.model_t.model.metric, self.model_t.optimizer = model_, opti
 
-        self.model_t.training(Eij[0], set_i=indexSet) 
-        preds = self.isQueryOutsider(Eij)
+        self.model_t.training(Eij[0], set_i=index_set) 
+        preds = self.is_query_outsider(Eij)
 
         return preds
 
 
-    """
-    @desc decide if the query is to be kept or not based on the r parameter
+    def decide_on_image_type(self, indices : int, Qij : Tensor, r : float, image_to_clean : List[str]) -> List[str]:
+        """
+        decide if the query is to be kept or not based on the r parameter
 
-    @param indices the position of the image in the matrix
-    @param Qij the query
-    @param r its r parameter has calculated by getR()
-    @param imageToClean a list of images
+        Parameters
+        ----------
+        indices :
+            the position of the image in the matrix
+        Qij :
+            the query
+        r :
+            the r parameter has calculated by get_r()
+        imageToClean :
+            a list of images
 
-    @return the updated list of images to remove
-    """
-    def decideOnImageType(self, indices, Qij, r, imageToClean):
+        Return
+        ------
+        the updated list of images to remove
+        """
 
-        tmp = imageToClean
+        tmp = image_to_clean
         if 0 <= r < 1:
-            self.falseVector.append(Qij)
-            tmp.append(self.meta_set.imageNameSetMatrix[indices[0]][indices[1]]) 
+            self.false_vector.append(Qij)
+            tmp.append(self.meta_set.imageName_set_matrix[indices[0]][indices[1]]) 
         else:
-            self.trueVector.append(Qij)
+            self.true_vector.append(Qij)
 
         return tmp
 
 
-    def getTrueAndFalseVectors(self, index, threshold, simMatrix):
+    def get_true_and_false_vectors(self, index : int, threshold : float, similiarity_matrix : List[List[float]]) -> Tuple[List[str], List[float]]:
 
         rList = []
         pathToRemove = []
         for j in range(0, len(self.meta_set[0])):
             Eij = [*self.meta_set(index, j)]
-            distFalse, distTrue = getSimilarityDistributions(simMatrix[j], threshold)
-            r = getR(distFalse, distTrue)
+            false_distribution, true_distribution = get_similarity_distributions(similiarity_matrix[j], threshold)
+            r = get_r(false_distribution, true_distribution)
             rList.append(r)
-            pathToRemove = self.decideOnImageType((index, j), Eij[1][0], r, pathToRemove)
+            pathToRemove = self.decide_on_image_type((index, j), Eij[1][0], r, pathToRemove)
 
         return pathToRemove, rList
 
 
-    def showSeparation(self, rList):
+    def show_separation(self):
 
-        if self.falseVector != []:
-            falseTensor = stack(self.falseVector)
-            plot_images(falseTensor, "Images To Clean", images_per_row=len(self.falseVector))
+        if self.false_vector != []:
+            false_tensor = stack(self.false_vector)
+            plot_images(false_tensor, "Images To Clean", images_per_row=len(self.false_vector))
 
-        if self.trueVector != []:
-            trueTensor = stack(self.trueVector)
-            plot_images(trueTensor, "Images to keep", images_per_row=len(self.trueVector))
+        if self.true_vector != []:
+            true_tensor = stack(self.true_vector)
+            plot_images(true_tensor, "Images to keep", images_per_row=len(self.true_vector))
 
 
-    def cleanSets(self):
+    def clean_sets(self):
 
         print("\n note that the cleaning process stops at the cumulative similarity matrix stage for now")
 
         rows, columns = self.meta_set.lenght()    
         for i in range(0, rows):
 
-            simMatrix = []
-            self.falseVector, self.trueVector = [], []
+            similarity_matrix = []
+            self.false_vector, self.true_vector = [], []
             for j in range(0, columns):
 
                 Eij = [*self.meta_set(i, j)]
-                preds = self.getPredictionsForOneQuery(Eij, i)
-                simMatrix.append(preds[:j]+[1]+preds[j:])
-                printSimMatrix(simMatrix)
+                preds = self.get_predictions_for_one_query(Eij, i)
+                similarity_matrix.append(preds[:j]+[1]+preds[j:])
+                print_similarity_matrix(similarity_matrix)
                 
                 if False:
-                    flattenedMatrix = list(itertools.chain(*simMatrix))
-                    m, v = stats.norm.fit(flattenedMatrix)
+                    flattened_matrix = list(itertools.chain(*similarity_matrix))
+                    m, v = stats.norm.fit(flattened_matrix)
 
                     print("threshold is", m-v)
-                    pathToRemove, rList = self.getTrueAndFalseVectors(i, m-v, simMatrix)
-                    self.showSeparation(rList)
+                    path_to_remove, rList = self.get_true_and_false_vectors(i, m-v, similarity_matrix)
+                    self.show_separation()
 
-        return simMatrix
+                    remove(path_to_remove) # function dosen't exist
+
+        return similarity_matrix

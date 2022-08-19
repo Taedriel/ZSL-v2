@@ -10,9 +10,9 @@ import time
 
 from .constants import *
 
-def getParser(classeName):
+def get_parser(classe_name : str) -> BeautifulSoup:
 
-  site = 'https://www.google.com/search?tbm=isch&q='+classeName
+  site = 'https://www.google.com/search?tbm=isch&q='+classe_name
 
   chrome_options = webdriver.ChromeOptions()
   chrome_options.add_argument('--headless')
@@ -38,52 +38,58 @@ def getParser(classeName):
   return soup
 
 
-"""
-@desc retrieve 20 images for a specific class
+def get_class_images(path : str, classe_name : List[str]) -> int:
+  """
+  retrieve 20 images for a specific class
 
-@param path path to the folder that will contain the images
-@param classeName name of the class 
+  Parameters
+  ----------
+  path :
+    path to the folder that will contain the images
+  classe_name : 
+    name of the class 
 
-@return the number of downloaded images
-"""
-def getClassImages(path, classeName):
+  Return
+  ------
+  the number of downloaded images
+  """
   
-  imagesNumber = 0
-  soup = getParser(classeName)
+  images_number = 0
+  soup = get_parser(classe_name)
   img_tags = soup.find_all("img", class_="rg_i")
 
   for index in range(0, len(img_tags)):
 
     try:
-      request.urlretrieve(img_tags[index]['src'], path+classeName+"/"+str(classeName+str(index))+".jpg")
-      imagesNumber+=1
+      request.urlretrieve(img_tags[index]['src'], path+classe_name+"/"+str(classe_name+str(index))+".jpg")
+      images_number+=1
     except Exception as e:
       pass
 
-  return imagesNumber
+  return images_number
 
 
-def getImagesGoogle(classes):
+def get_images_from_google(classes : List[str]) -> int:
 
-  imagesNumber = 0
+  images_number = 0
   print("downloading images...\n")
   for classe in tqdm(classes):
 
     try:
-      classeName = classe.replace(" ", "")
-      makedirs(PATH_IMAGES+classeName)
-      imagesNumber += getClassImages(PATH_IMAGES, classeName)
+      classe_name = classe.replace(" ", "")
+      makedirs(PATH_IMAGES+classe_name)
+      images_number += get_class_images(PATH_IMAGES, classe_name)
     except Exception as e:
       pass
 
-  return imagesNumber
+  return images_number
 
 
-def getClassesImagesURLLIB(classes, download=True):
+def get_classes_images_URLLIB(classes : List[str], download=True):
 
-  imagesNumber = 0
+  images_number = 0
 
   if download:
-    imagesNumber = getImagesGoogle(classes)
+    images_number = get_images_from_google(classes)
   
-  print("\n"+str(imagesNumber) + " images were downloaded. " + str(imagesNumber/len(classes)) + " per classes", "\n")
+  print("\n"+str(images_number) + " images were downloaded. " + str(images_number/len(classes)) + " per classes", "\n")

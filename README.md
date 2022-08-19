@@ -2,7 +2,7 @@
 
 With the development of deep learning approaches and convolutional neural networks (CNN) in particular, the task of recognising objects from a single image has become almost straightforward. However, not only do such image classifiers rely on large training datasets, but they can only recognise images whose class was used to train the network. Zero-Shot Learning (ZSL) addresses this issue by extending the range of recognisable objects by including object classes only described by textual attributes (i.e., without the need of image data) [1]. As textual attributes are not as rich as image ones, object annotations are usually provided with much lower confidence and often alternative labels are offered.
 
-!["global recap of the project"](.\distribute\part3-FSL.png)
+!["global recap of the project"](distribute/part3-FSL.png)
 
 The aim of this project is to design and implement a novel deep learning pipeline to evaluate the annotations produced by a ZSL system for an unseen query image to eventually return a single annotation with high confidence. It is proposed that this pipeline will rely on the following steps:
 1. Retrieve potential training images by using the potential labels returned by the ZSL system as query terms for a search engine

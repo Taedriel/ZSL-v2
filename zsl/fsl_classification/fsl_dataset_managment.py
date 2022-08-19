@@ -3,7 +3,10 @@ from os import listdir
 from random import randint
 
 from .utils import natural_keys
-from .utils_dataset import getImageTensor
+from .utils_dataset import get_image_tensor
+
+from torch import Tensor
+from typing import List, Tuple
  
 
 # each set is as follows, with I an image and c its label (a number) : 
@@ -20,25 +23,47 @@ from .utils_dataset import getImageTensor
 ]
 """
 
-def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type):
+def get_folder_tensors_for_training(path : str, support_number : int, query_number : int, label : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+  """
+  get a support / query set in tensor form from a folder
+
+  Parameters
+  ----------
+  path :
+    the path to the folder
+  support_number :
+    the number of images to put into the support set
+  query_number :
+    the number of images to put into the query set
+  label :
+    the label of the class
+  conversion_type :
+    the type of conversion to use
+
+  Return
+  ------
+  the support and query set of the folder
+  """
 
   images = listdir(path)
+
+  assert support_number+query_number <= len(images); "the specified numbers are too large"
   images.sort(key=natural_keys)
   support_i, query_i = [], []
 
-  for i in range(0, supportNumber):
+  for i in range(0, support_number):
     ridx = randint(0, len(images)-1)
     try:
-      support_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
+      support_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
       print("support image could not be loaded")
 
     images.remove(images[ridx])
   
-  for i in range(0, queryNumber):
+  for i in range(0, query_number):
     ridx = randint(0, len(images)-1)
     try:
-      query_i.append( (getImageTensor(path+images[ridx], conversion_type=conversion_type), label) )
+      query_i.append( (get_image_tensor(path+images[ridx], conversion_type=conversion_type), label) )
     except:
       print("query image could not be loaded")
 
@@ -47,20 +72,26 @@ def getFolderTensorsForTraining(path, supportNumber, queryNumber, label, convers
   return support_i, query_i
 
 
-"""
-@desc get the support set and query set for training the model after cleaning
+def get_sets(paths : List[str], support_number : int, query_number : int, conversion_type : str) -> Tuple[Tensor, Tensor]:
+  """
+  get the support set and query set for training the model after cleaning
 
-@param supportNumber the n_shot parameter 
-@param queryNumber the number of query
+  Parameters
+  ----------
+  support_number :
+    the n_shot parameter 
+  query_number :
+    the number of query
 
-@return the support and query set
-"""
-def getSets(paths, supportNumber, queryNumber, conversion_type):
+  Return
+  ------
+  the support and query set
+  """
 
-  supportSet, querySet = [], []
+  support_set, query_set = [], []
   for label, path in enumerate(paths):
-    Si, Qi = getFolderTensorsForTraining(path, supportNumber, queryNumber, label, conversion_type)
-    supportSet.append(Si)
-    querySet.append(Qi)
+    Si, Qi = get_folder_tensors_for_training(path, support_number, query_number, label, conversion_type)
+    support_set.append(Si)
+    query_set.append(Qi)
 
-  return supportSet, querySet
+  return support_set, query_set
